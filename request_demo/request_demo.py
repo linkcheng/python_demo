@@ -4,18 +4,34 @@
 import requests
 import re
 
+def getUrl(session, cookie):
+    commit_id = '68926df060ac7cad1dfcf78c794f261ceb1effad'
+    url = 'http://igerrit/gitweb?p=Doc/17Model/17Cy/21_UI.git;a=commit;h=' + commit_id
+    headers = {'Cookie':cookie}
 
-url = 'http://igerrit/gitweb?p=Doc/17Model/17Cy/21_UI.git;a=commit;h=3f34ceaffe6b4e94d46fa781533ca79b0ffef09c'
+    r = session.request('GET', url, headers = headers)
 
-headers = {'Cookie':'GerritAccount=aRAqprrpNrRmhO5jQ0hM6dKcbzp08Bek2G'}
+    it = re.findall(r'<td><a class="list" href=.+?</a></td>', r.text)
 
-r = requests.request('GET', url, headers = headers)
+    for i in it:
+        s = re.findall(r'gitweb.+?;h=|Navi.+?</a>', i)
+        print 'http://igerrit/' + s[0][:-3]
+        filepath = re.split(r'/', s[1][:-4])
+        print filepath[-1]
+        
+def getCookie(session):
+    url = 'http://igerrit/login/#/q/status:open'
+    data = {
+        'username':'******',
+        'password':'******'}
+    
+    r = session.post(url, data = data)
+    return  r.request.headers.get('Cookie')
 
-it = re.findall(r'<td><a class="list" href=.+?</a></td>', r.text)
+    
 
-for i in it:
-    s = re.findall(r'gitweb.+?;h=|Navi.+?</a>', i)
-    print 'http://igerrit/' + s[0][:-3]
-    filepath = re.split(r'/', s[1][:-4])
-    print filepath[-1]
-    print '\n'
+if __name__ == '__main__':
+    s = requests.Session()
+    cookie = getCookie(s)
+    getUrl(s, cookie)
+    
