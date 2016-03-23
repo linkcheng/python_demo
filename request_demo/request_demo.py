@@ -22,8 +22,8 @@ def getUrl(session, cookie):
 def getCookie(session):
     url = 'http://igerrit/login/#/q/status:open'
     data = {
-        'username':'******',
-        'password':'******'}
+        'username':'zhenglong',
+        'password':'zl5026177'}
     
     r = session.post(url, data = data)
     return  r.request.headers.get('Cookie')
@@ -31,7 +31,7 @@ def getCookie(session):
     
 
 if __name__ == '__main__':
-    s = requests.Session()
-    cookie = getCookie(s)
-    getUrl(s, cookie)
+    session = requests.Session()
+    cookie = getCookie(session)
+    getUrl(session, cookie)
     
