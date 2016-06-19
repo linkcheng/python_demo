@@ -29,3 +29,9 @@ with DummyResource('normal') as dr:
 
 print '============================================'
 
+with DummyResource('raise exception') as dr:
+    print '[with body] run with exception '
+    raise Exception
+    print '[with-body] run with exception. Failed to finish statement-body!'
+
+print '============================================'
