@@ -1,0 +1,10 @@
+2016-08-09 09:03:02,680 - Mike - DEBUG - doubler function executing
+2016-08-09 09:03:02,680 - George - DEBUG - doubler function executing
+2016-08-09 09:03:02,680 - George - DEBUG - doubler function ended with: 2
+2016-08-09 09:03:02,680 - Wanda - DEBUG - doubler function executing
+2016-08-09 09:03:02,680 - Mike - DEBUG - doubler function ended with: 0
+2016-08-09 09:03:02,681 - Dingbat - DEBUG - doubler function executing
+2016-08-09 09:03:02,681 - Wanda - DEBUG - doubler function ended with: 4
+2016-08-09 09:03:02,681 - Nina - DEBUG - doubler function executing
+2016-08-09 09:03:02,681 - Dingbat - DEBUG - doubler function ended with: 6
+2016-08-09 09:03:02,681 - Nina - DEBUG - doubler function ended with: 8
