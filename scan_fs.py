@@ -40,12 +40,15 @@ import time
 from multiprocessing import Process, Queue 
 from functools import wraps
 
+dir_count = 0
+file_count = 0
+
 def usage():  
     print '''Usage: scan_fs [-h] [--help]
             [-l the deep level you want to scan, it must be bigger than or equal to 0.]
             [-d the directory which you want scan, it must be a real directory.]'''
 
-def print_txt(fname):
+def print_file(fname):
     print('\033[0m'),
     print(fname)
 
@@ -59,40 +62,37 @@ def print_exe(ename):
     print(ename),
     print('\033[0m')
 
-def print_only_files_in_dir(fnames):
-        sum = len(fnames)
-        for index, fname in enumerate(fnames): # 输出文件信息
-            if index == sum - 1:
-                print(' └──'),
-            else:
-                print(' ├──' ),
+def get_dir_cnt_tree(d = '.'):
+    '''get dir content'''
+    #delete the '/' of the d if it has, e.g.: './'->'.''
+    if d[-1] == '/' and len(d) > 1:
+        d = d[:-1]
 
-            print_txt(fname)
+    global dir_count
+    global file_count
+    items = os.listdir(d)
+    items_sum = len(items)
+    for index, item in enumerate(sorted(items)): # get all files and dirs in the dir
+        path = d+'/'+item
+        slash_count = path.count('/')
 
-def print_only_dirs_in_dir(dnames):
-        sum = len(dnames)
-        for index, dname in enumerate(dnames): # 输出文件信息
-            if index == sum - 1:
-                print(' └──'),
-            else:
-                print(' ├──' ),
-
-            print_dir(dname)
-
-def get_dir_cnt(d = '.'):
-    # os.system("tree " + d)
-    print_dir(d)
-    items = os.listdir(d) 
-
-    for item in os.listdir(d): # get all files and dirs in the dir
-        print item,
-        if isdir(item) :
-            print ' is a dir'
-        elif isfile(item):
-            print ' is a file'
-        elif islink(item):
-            print ' is a link'
+        # format the content
+        for c in range(slash_count - 1):
+            print('│   '),
+        if index == items_sum - 1:
+            print('└──'),
         else:
+            print('├──' ),
+
+        # print content
+        if os.path.isdir(path) : # dir
+            dir_count += 1
+            print_dir(item)
+            get_dir_cnt_tree(path)
+        elif os.path.isfile(path): # file
+            file_count += 1
+            print_file(item)
+        else: # others
             print ' is others'
 
 
@@ -101,7 +101,7 @@ def get_dir_cnt(d = '.'):
     #     print_only_files_in_dir(filenames)
 
 
-def main():
+def tree():
     opts, args = getopt.getopt(sys.argv[1:], 'd:', ['help', ])
     options = dict(opts)
     
@@ -116,9 +116,22 @@ def main():
             usage()
             sys.exit(1)
         else:
-            get_dir_cnt(d)
+            print_dir(d)
+            get_dir_cnt_tree(d)
     else: # only the default para
-        get_dir_cnt()
+        print_dir('.')
+        get_dir_cnt_tree()
 
 if "__main__" == __name__:
-    main()
+    tree()
+
+    if dir_count >= 1:
+        print(str(dir_count) + ' directories, '),
+    else:
+        print(str(dir_count) + ' directory, '),
+
+    if file_count >= 1:
+        print(str(dir_count) + 'files')
+    else:
+        print(str(dir_count) + 'file')
+    
