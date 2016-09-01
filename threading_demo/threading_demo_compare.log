@@ -1,0 +1,46 @@
+In 1706 process, total time running cal: 14.2411677837 seconds
+
+In 1706 process, total time running single_cal: 14.2412230968 seconds
+
+In 1706 process, total time running single_thread: 14.2412359715 seconds
+
+In 1706 process, total time running cal: 0.239110946655 seconds
+
+In 1706 process, total time running cal: 0.238509893417 seconds
+In 1706 process, total time running cal: 0.248246192932 seconds
+
+In 1706 process, total time running cal: 0.2462849617 seconds
+
+
+In 1706 process, total time running cal: 0.24737906456 seconds
+
+In 1706 process, total time running cal: 0.246163845062 seconds
+
+In 1706 process, total time running cal: 0.251971960068 seconds
+
+In 1706 process, total time running multi_cal: 1.92752194405 seconds
+
+In 1706 process, total time running multi_thread: 1.94781303406 seconds
+
+In 1706 process, total time running cal: 0.291405916214 seconds
+
+In 1798 process, total time running cal: 0.252372026443 seconds
+
+In 1803 process, total time running cal: 0.411283016205 seconds
+
+In 1796 process, total time running cal: 0.464194059372 seconds
+
+In 1800 process, total time running cal: 0.458986997604 seconds
+
+In 1801 process, total time running cal: 0.475884914398 seconds
+
+In 1799 process, total time running cal: 0.477090120316 seconds
+
+In 1797 process, total time running cal: 0.528456926346 seconds
+
+In 1802 process, total time running cal: 0.525974035263 seconds
+
+In 1706 process, total time running multi_process: 0.642118930817 seconds
+
+In 1706 process, total time running main: 17.8025369644 seconds
+
