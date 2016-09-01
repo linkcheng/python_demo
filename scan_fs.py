@@ -42,6 +42,7 @@ from functools import wraps
 
 dir_count = 0
 file_count = 0
+path = ''
 
 def usage():  
     print '''Usage: scan_fs [-h] [--help]
@@ -70,14 +71,15 @@ def get_dir_cnt_tree(d = '.'):
 
     global dir_count
     global file_count
+
     items = os.listdir(d)
     items_sum = len(items)
     for index, item in enumerate(sorted(items)): # get all files and dirs in the dir
-        path = d+'/'+item
-        slash_count = path.count('/')
+        p = d+'/'+item
+        slash_count = p.count('/')
 
         # format the content
-        for c in range(slash_count - 1):
+        for c in range(slash_count - 1 - path.count('/')):
             print('│   '),
         if index == items_sum - 1:
             print('└──'),
@@ -85,23 +87,31 @@ def get_dir_cnt_tree(d = '.'):
             print('├──' ),
 
         # print content
-        if os.path.isdir(path) : # dir
+        if os.path.isdir(p) : # dir
             dir_count += 1
             print_dir(item)
-            get_dir_cnt_tree(path)
-        elif os.path.isfile(path): # file
+            get_dir_cnt_tree(p)
+        elif os.path.isfile(p): # file
             file_count += 1
             print_file(item)
         else: # others
             print ' is others'
-
-
     # for parent,dirnames,filenames in os.walk(d): # 三个参数：分别返回1.父目录 2.所有文件夹名字（不含路径） 3.所有文件名字
     #     print_only_dirs_in_dir(dirnames)
     #     print_only_files_in_dir(filenames)
 
-
 def tree():
+    global path
+
+    print_dir(path)
+
+    if path[-1] == '/' and len(path) > 1:
+        path = path[:-1]
+
+    get_dir_cnt_tree(path)
+
+def main():
+    global path
     opts, args = getopt.getopt(sys.argv[1:], 'd:', ['help', ])
     options = dict(opts)
     
@@ -109,21 +119,21 @@ def tree():
         usage()
         sys.exit(1)
     elif options.has_key('-d'): # if gives a dir directly
-        d = options['-d']
+        path = options['-d']
 
-        if not os.path.isdir(d): # if the dir not exsit, exit the process
+        if not os.path.isdir(path): # if the dir not exsit, exit the process
             print('This is not real directory!');
             usage()
             sys.exit(1)
         else:
-            print_dir(d)
-            get_dir_cnt_tree(d)
+            tree()
     else: # only the default para
-        print_dir('.')
-        get_dir_cnt_tree()
+        path = '.'
+        tree()
+        
 
 if "__main__" == __name__:
-    tree()
+    main()
 
     if dir_count >= 1:
         print(str(dir_count) + ' directories, '),
@@ -131,7 +141,7 @@ if "__main__" == __name__:
         print(str(dir_count) + ' directory, '),
 
     if file_count >= 1:
-        print(str(dir_count) + 'files')
+        print(str(file_count) + 'files')
     else:
-        print(str(dir_count) + 'file')
+        print(str(file_count) + 'file')
     
