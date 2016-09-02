@@ -30,19 +30,13 @@
  # \033[0m          <!--采用终端默认设置，即取消颜色设置-->
 
 import os
-import re
 import sys
-import subprocess
 import getopt
-import logging
-import requests
-import time
-from multiprocessing import Process, Queue 
-from functools import wraps
 
 dir_count = 0
 file_count = 0
-path = ''
+path = '.'
+last_dir = []
 
 def usage():  
     print '''Usage: scan_fs [-h] [--help]
@@ -63,46 +57,94 @@ def print_exe(ename):
     print(ename),
     print('\033[0m')
 
-def get_dir_cnt_tree(d = '.'):
-    '''get dir content'''
+def separate_dir_file(items, d):
+    '''separate dir and files, st: dirs always before files'''
+    dir_list = []
+    file_list = []
+
+    for item in items:
+        '''divise dir and file and sort them'''
+        p = d+'/'+item
+
+        # separate dir and file
+        if os.path.isdir(p) : # dir
+            dir_list.append(item)
+        elif os.path.isfile(p): # file
+            file_list.append(item)
+        else:
+            pass
+
+    items = sorted(dir_list) + sorted(file_list)
+    return items
+
+def build_tree(d):
+    '''build file system tree'''
+    global dir_count
+    global file_count
+    global last_dir
+    b_last = 0
+
+    # get dirs and files in a list.
+    # In listdir(d), some conditions, there is a OSError, because of Permission denied
+    items = os.listdir(d)    
+    items_sum = len(items)
+
     #delete the '/' of the d if it has, e.g.: './'->'.''
     if d[-1] == '/' and len(d) > 1:
         d = d[:-1]
 
-    global dir_count
-    global file_count
+    # get all files and dirs in the dir
+    for index, item in enumerate(sorted(items)): 
+        p = d + '/'+ item
 
-    items = os.listdir(d)
-    items_sum = len(items)
-    for index, item in enumerate(sorted(items)): # get all files and dirs in the dir
-        p = d+'/'+item
-        slash_count = p.count('/')
+        # format the content, here a bug, watch out!!!
+        for i in last_dir:
+            if 1 == i:
+                print('│   '),
+            else:
+                print('     '),
 
-        # format the content
-        for c in range(slash_count - 1 - path.count('/')):
-            print('│   '),
         if index == items_sum - 1:
+            b_last = 0
             print('└──'),
         else:
+            b_last = 1
             print('├──' ),
 
         # print content
         if os.path.isdir(p) : # dir
             dir_count += 1
             print_dir(item)
-            get_dir_cnt_tree(p)
+            # into a dir, so the lenth of the list + 1
+            last_dir.append(b_last)
+            # 
+            build_tree(p)
+            # back from a dir, so length - 1
+            last_dir.pop()
         elif os.path.isfile(p): # file
             file_count += 1
             print_file(item)
         else: # others
-            print ' is others'
-    # for parent,dirnames,filenames in os.walk(d): # 三个参数：分别返回1.父目录 2.所有文件夹名字（不含路径） 3.所有文件名字
-    #     print_only_dirs_in_dir(dirnames)
-    #     print_only_files_in_dir(filenames)
+            pass
+
+def get_dir_cnt_tree(d = '.'):
+    '''get dir content'''
+
+    # #delete the '/' of the d if it has, e.g.: './'->'.''
+    # if d[-1] == '/' and len(d) > 1:
+    #     d = d[:-1]
+    # # get dirs and files in a list
+    # items = os.listdir(d)
+    # # separate dir and files, st: dirs always before files
+    # items = separate_dir_file(items, d)
+    # # build fs tree
+    # build_tree(items, d)
+    build_tree(d)
+
+
 
 def tree():
     global path
-
     print_dir(path)
 
     if path[-1] == '/' and len(path) > 1:
@@ -128,7 +170,6 @@ def main():
         else:
             tree()
     else: # only the default para
-        path = '.'
         tree()
         
 
