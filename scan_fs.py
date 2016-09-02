@@ -2,35 +2,37 @@
 # coding:utf-8  
 # @Author: linkcheng
 # function：scan a directory which you want.
-# If you don't give one , it will sacn the root directory in one level deepth.
+# If you don't give one , it will sacn the current directory in one level deepth.
 
- #  格式：\033[显示方式;前景色;背景色m
- # 说明：
- # 前景色            背景色           颜色
- # ---------------------------------------
- # 30                40              黑色
- # 31                41              红色
- # 32                42              绿色
- # 33                43              黃色
- # 34                44              蓝色
- # 35                45              紫红色
- # 36                46              青蓝色
- # 37                47              白色
- # 显示方式           意义
- # -------------------------
- # 0                终端默认设置
- # 1                高亮显示
- # 4                使用下划线
- # 5                闪烁
- # 7                反白显示
- # 8                不可见
-  
- # 例子：
- # \033[1;31;40m    <!--1-高亮显示 31-前景色红色  40-背景色黑色-->
- # \033[0m          <!--采用终端默认设置，即取消颜色设置-->
+#  格式：\033[显示方式;前景色;背景色m
+# 说明：
+# 前景色            背景色           颜色
+# ---------------------------------------
+# 30                40              黑色
+# 31                41              红色
+# 32                42              绿色
+# 33                43              黃色
+# 34                44              蓝色
+# 35                45              紫红色
+# 36                46              青蓝色
+# 37                47              白色
+# 显示方式           意义
+# -------------------------
+# 0                终端默认设置
+# 1                高亮显示
+# 4                使用下划线
+# 5                闪烁
+# 7                反白显示
+# 8                不可见
+ 
+# 例子：
+# \033[1;31;40m    <!--1-高亮显示 31-前景色红色  40-背景色黑色-->
+# \033[0m          <!--采用终端默认设置，即取消颜色设置-->
 
+import platform
 import os
 import sys
+import stat
 import getopt
 
 dir_count = 0
@@ -39,9 +41,24 @@ path = '.'
 last_dir = []
 
 def usage():  
-    print '''Usage: scan_fs [-h] [--help]
+    print('''Usage: scan_fs [-h] [--help]
             [-l the deep level you want to scan, it must be bigger than or equal to 0.]
-            [-d the directory which you want scan, it must be a real directory.]'''
+            [-d the directory which you want scan, it must be a real directory.]''')
+
+def use_platform():
+    sysstr = platform.system()
+    if (sysstr == 'Linux'):
+        pass
+    else:
+        print('This must be run on Linux system!')
+        sys.exit(1)
+
+def use_version():
+    if '2.7' == sys.version[0:3]:
+        pass
+    else:
+        print('This must be run in Python 2.7 version!')
+        sys.exit(1)
 
 def print_file(fname):
     print('\033[0m'),
@@ -63,9 +80,7 @@ def separate_dir_file(items, d):
     file_list = []
 
     for item in items:
-        '''divise dir and file and sort them'''
         p = d+'/'+item
-
         # separate dir and file
         if os.path.isdir(p) : # dir
             dir_list.append(item)
@@ -86,7 +101,12 @@ def build_tree(d):
 
     # get dirs and files in a list.
     # In listdir(d), some conditions, there is a OSError, because of Permission denied
-    items = os.listdir(d)    
+    try:
+        items = os.listdir(d) 
+    except OSError:
+        print(d + " Permission denied!")
+        sys.exit(1)
+
     items_sum = len(items)
 
     #delete the '/' of the d if it has, e.g.: './'->'.''
@@ -95,15 +115,23 @@ def build_tree(d):
 
     # get all files and dirs in the dir
     for index, item in enumerate(sorted(items)): 
-        p = d + '/'+ item
+        full_path = d + '/'+ item
 
-        # format the content, here a bug, watch out!!!
+        # hide file
+        if '.' == item[0] :
+            continue
+
+        mode = os.stat(full_path).st_mode
+        # if stat.
+        print(full_path + "'s mode is " + str(mode))
+        continue
+
+        # format the content
         for i in last_dir:
             if 1 == i:
                 print('│   '),
             else:
                 print('     '),
-
         if index == items_sum - 1:
             b_last = 0
             print('└──'),
@@ -112,16 +140,16 @@ def build_tree(d):
             print('├──' ),
 
         # print content
-        if os.path.isdir(p) : # dir
+        if os.path.isdir(full_path) : # dir
             dir_count += 1
             print_dir(item)
             # into a dir, so the lenth of the list + 1
             last_dir.append(b_last)
-            # 
-            build_tree(p)
+            # build file system tree
+            build_tree(full_path)
             # back from a dir, so length - 1
             last_dir.pop()
-        elif os.path.isfile(p): # file
+        elif os.path.isfile(full_path): # file
             file_count += 1
             print_file(item)
         else: # others
@@ -130,18 +158,7 @@ def build_tree(d):
 def get_dir_cnt_tree(d = '.'):
     '''get dir content'''
 
-    # #delete the '/' of the d if it has, e.g.: './'->'.''
-    # if d[-1] == '/' and len(d) > 1:
-    #     d = d[:-1]
-    # # get dirs and files in a list
-    # items = os.listdir(d)
-    # # separate dir and files, st: dirs always before files
-    # items = separate_dir_file(items, d)
-    # # build fs tree
-    # build_tree(items, d)
     build_tree(d)
-
-
 
 def tree():
     global path
@@ -160,28 +177,31 @@ def main():
     if options.has_key('-h') or options.has_key('--help'):
         usage()
         sys.exit(1)
-    elif options.has_key('-d'): # if gives a dir directly
+    # if gives a dir directly
+    elif options.has_key('-d'): 
         path = options['-d']
-
-        if not os.path.isdir(path): # if the dir not exsit, exit the process
+        # if the dir not exsit, exit the process
+        if not os.path.isdir(path): 
             print('This is not real directory!');
             usage()
             sys.exit(1)
         else:
             tree()
-    else: # only the default para
+    # only the default para
+    else: 
         tree()
         
-
 if "__main__" == __name__:
+    use_platform()
+    use_version()
     main()
 
-    if dir_count >= 1:
+    if dir_count > 1:
         print(str(dir_count) + ' directories, '),
     else:
         print(str(dir_count) + ' directory, '),
 
-    if file_count >= 1:
+    if file_count > 1:
         print(str(file_count) + 'files')
     else:
         print(str(file_count) + 'file')
