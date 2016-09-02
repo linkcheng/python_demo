@@ -42,7 +42,6 @@ last_dir = []
 
 def usage():  
     print('''Usage: scan_fs [-h] [--help]
-            [-l the deep level you want to scan, it must be bigger than or equal to 0.]
             [-d the directory which you want scan, it must be a real directory.]''')
 
 def use_platform():
@@ -60,19 +59,36 @@ def use_version():
         print('This must be run in Python 2.7 version!')
         sys.exit(1)
 
+def is_exe(full_name):
+    if '1' == bin(int(oct(os.stat(full_name)[stat.ST_MODE])[-3:-2]))[-1]:
+        return True
+    else:
+        return False
+
 def print_file(fname):
     print('\033[0m'),
     print(fname)
+
+def print_exe(ename):
+    print('\033[1;32m'),
+    print(ename),
+    print('\033[0m')
 
 def print_dir(dname):
     print('\033[1;34m'),
     print(dname),
     print('\033[0m')
 
-def print_exe(ename):
-    print('\033[1;32m'),
-    print(ename),
+def print_soc(sname):
+    print('\033[1;35m'),
+    print(sname),
     print('\033[0m')
+
+def print_lnk(lname):
+    print('\033[1;36m'),
+    print(lname),
+    print('\033[0m'),
+    print('->'),
 
 def separate_dir_file(items, d):
     '''separate dir and files, st: dirs always before files'''
@@ -92,6 +108,29 @@ def separate_dir_file(items, d):
     items = sorted(dir_list) + sorted(file_list)
     return items
 
+def real_file(full_path, item):
+    '''this will show the real file of link file '''
+    global dir_count
+    global file_count
+
+    mode = os.stat(full_path).st_mode
+    if os.path.isdir(full_path) : # dir
+        dir_count += 1
+        print_dir(item)
+    elif os.path.isfile(full_path): # file
+        file_count += 1
+        if is_exe(full_path): # exe file
+            print_exe(item)
+        else: # non-exe file
+            print_file(item)
+    else: # others
+        # socket file
+        if stat.S_ISSOCK(mode):
+            file_count += 1
+            print_soc(item)
+        else:
+            pass
+
 def build_tree(d):
     '''build file system tree'''
     global dir_count
@@ -104,7 +143,7 @@ def build_tree(d):
     try:
         items = os.listdir(d) 
     except OSError:
-        print(d + " Permission denied!")
+        print(d + ' Permission denied!')
         sys.exit(1)
 
     items_sum = len(items)
@@ -116,15 +155,11 @@ def build_tree(d):
     # get all files and dirs in the dir
     for index, item in enumerate(sorted(items)): 
         full_path = d + '/'+ item
+        mode = os.stat(full_path).st_mode
 
         # hide file
         if '.' == item[0] :
             continue
-
-        mode = os.stat(full_path).st_mode
-        # if stat.
-        print(full_path + "'s mode is " + str(mode))
-        continue
 
         # format the content
         for i in last_dir:
@@ -140,7 +175,10 @@ def build_tree(d):
             print('├──' ),
 
         # print content
-        if os.path.isdir(full_path) : # dir
+        if os.path.islink(full_path): # link fle
+            print_lnk(item)
+            real_file(full_path, item)
+        elif os.path.isdir(full_path) : # dir
             dir_count += 1
             print_dir(item)
             # into a dir, so the lenth of the list + 1
@@ -151,9 +189,17 @@ def build_tree(d):
             last_dir.pop()
         elif os.path.isfile(full_path): # file
             file_count += 1
-            print_file(item)
+            if is_exe(full_path): # exe file
+                print_exe(item)
+            else: # non-exe file
+                print_file(item)
         else: # others
-            pass
+            # socket file
+            if stat.S_ISSOCK(mode):
+                file_count += 1
+                print_soc(item)
+            else:
+                pass
 
 def get_dir_cnt_tree(d = '.'):
     '''get dir content'''
