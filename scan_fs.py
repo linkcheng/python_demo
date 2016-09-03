@@ -33,7 +33,9 @@ import platform
 import os
 import sys
 import stat
+import re
 import getopt
+import argparse
 
 dir_count = 0
 file_count = 0
@@ -65,30 +67,49 @@ def is_exe(full_name):
     else:
         return False
 
-def print_file(fname):
+def print_file(name):
     print('\033[0m'),
-    print(fname)
+    print(name)
 
-def print_exe(ename):
+def print_exe(name):
     print('\033[1;32m'),
-    print(ename),
+    print(name),
     print('\033[0m')
 
-def print_dir(dname):
+def print_blk(name):
+    print('\033[1;33;40m'),
+    print(name),
+    print('\033[0m')
+
+def print_dir(name):
     print('\033[1;34m'),
-    print(dname),
+    print(name),
     print('\033[0m')
 
-def print_soc(sname):
+def print_soc(name):
     print('\033[1;35m'),
-    print(sname),
+    print(name),
     print('\033[0m')
 
-def print_lnk(lname):
+def print_lnk(name):
     print('\033[1;36m'),
-    print(lname),
+    print(name),
     print('\033[0m'),
     print('->'),
+
+def print_result():
+    global dir_count
+    global file_count
+
+    if dir_count > 1:
+        print('\n' + str(dir_count) + ' directories,'),
+    else:
+        print(str(dir_count) + ' directory,'),
+
+    if file_count > 1:
+        print(str(file_count) + ' files')
+    else:
+        print(str(file_count) + ' file')
 
 def separate_dir_file(items, d):
     '''separate dir and files, st: dirs always before files'''
@@ -108,12 +129,33 @@ def separate_dir_file(items, d):
     items = sorted(dir_list) + sorted(file_list)
     return items
 
+def get_real_file_name(full_path, item):
+    '''get the real file name of the link file'''
+    global path
+    # print("")
+
+    # get the real file abs path of the link file
+    abs_path = os.path.realpath(full_path) 
+    # get the relate path, there is bug!!
+    rel_path = os.path.relpath(abs_path, item)
+    # print(abs_path)
+    # print(rel_path)
+    # if the real file in the dir is the same as the link file
+    if re.match(path, rel_path[3:]):
+        item = rel_path[(3 + len(path) + 1):]
+    else:
+        item = rel_path
+
+    return abs_path, item
+
 def real_file(full_path, item):
-    '''this will show the real file of link file '''
+    '''If from a link file, this will show the real file of link file;
+      If from a non-link file, will go normal '''
     global dir_count
     global file_count
 
     mode = os.stat(full_path).st_mode
+
     if os.path.isdir(full_path) : # dir
         dir_count += 1
         print_dir(item)
@@ -128,13 +170,16 @@ def real_file(full_path, item):
         if stat.S_ISSOCK(mode):
             file_count += 1
             print_soc(item)
+        # block file
+        elif stat.S_ISBLK(mode) or stat.S_ISCHR(mode):
+            file_count += 1
+            print_blk(item)
         else:
-            pass
+            print(full_path)
 
-def build_tree(d):
+def build_tree(d = '.'):
     '''build file system tree'''
     global dir_count
-    global file_count
     global last_dir
     b_last = 0
 
@@ -177,6 +222,8 @@ def build_tree(d):
         # print content
         if os.path.islink(full_path): # link fle
             print_lnk(item)
+            full_path, item = get_real_file_name(full_path, item)
+            # get_real_file_name(full_path, item)
             real_file(full_path, item)
         elif os.path.isdir(full_path) : # dir
             dir_count += 1
@@ -187,24 +234,8 @@ def build_tree(d):
             build_tree(full_path)
             # back from a dir, so length - 1
             last_dir.pop()
-        elif os.path.isfile(full_path): # file
-            file_count += 1
-            if is_exe(full_path): # exe file
-                print_exe(item)
-            else: # non-exe file
-                print_file(item)
-        else: # others
-            # socket file
-            if stat.S_ISSOCK(mode):
-                file_count += 1
-                print_soc(item)
-            else:
-                pass
-
-def get_dir_cnt_tree(d = '.'):
-    '''get dir content'''
-
-    build_tree(d)
+        else:
+            real_file(full_path, item)
 
 def tree():
     global path
@@ -213,42 +244,52 @@ def tree():
     if path[-1] == '/' and len(path) > 1:
         path = path[:-1]
 
-    get_dir_cnt_tree(path)
+    build_tree(path)
 
-def main():
+def detail():
+    pass
+
+def start(p = '.', option = 't'):
     global path
-    opts, args = getopt.getopt(sys.argv[1:], 'd:', ['help', ])
-    options = dict(opts)
-    
-    if options.has_key('-h') or options.has_key('--help'):
+
+    if not os.path.isdir(p): 
+        print('This is not real directory!');
         usage()
         sys.exit(1)
+    
+    path = p
+
+    if 'l' == option:
+        detail()
+    else:
+        tree()
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], ' t:hl:', ['help', ])
+    except getopt.GetoptError, err:
+        print(str(err))
+        usage()
+        sys.exit(1)
+    options = dict(opts)
+
+    if options.has_key('-h') or options.has_key('--help'):
+        usage()
+        sys.exit(0)
     # if gives a dir directly
-    elif options.has_key('-d'): 
-        path = options['-d']
-        # if the dir not exsit, exit the process
-        if not os.path.isdir(path): 
-            print('This is not real directory!');
-            usage()
-            sys.exit(1)
-        else:
-            tree()
+    elif options.has_key('-l'): 
+        start(options['-l'], 'l')
+        # if gives a dir directly
+    elif options.has_key('-t'): 
+        start(options['-t'], 't')
     # only the default para
     else: 
-        tree()
+        start(sys.argv[1:][0])
         
 if "__main__" == __name__:
     use_platform()
     use_version()
+
     main()
-
-    if dir_count > 1:
-        print(str(dir_count) + ' directories, '),
-    else:
-        print(str(dir_count) + ' directory, '),
-
-    if file_count > 1:
-        print(str(file_count) + 'files')
-    else:
-        print(str(file_count) + 'file')
     
+    print_result()
