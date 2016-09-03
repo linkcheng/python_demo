@@ -44,7 +44,8 @@ last_dir = []
 
 def usage():  
     print('''Usage: scan_fs [-h] [--help]
-            [-d the directory which you want scan, it must be a real directory.]''')
+            [-t build a tree of the directory which you give.]
+            [-l list the profiles of the directory which you give.]''')
 
 def use_platform():
     sysstr = platform.system()
@@ -102,44 +103,24 @@ def print_result():
     global file_count
 
     if dir_count > 1:
-        print('\n' + str(dir_count) + ' directories,'),
+        print('\n' + str(dir_count) + ' directories ,'),
     else:
-        print(str(dir_count) + ' directory,'),
+        print(str(dir_count) + ' directory ,'),
 
     if file_count > 1:
-        print(str(file_count) + ' files')
+        print(str(file_count) + ' files'),
     else:
-        print(str(file_count) + ' file')
-
-def separate_dir_file(items, d):
-    '''separate dir and files, st: dirs always before files'''
-    dir_list = []
-    file_list = []
-
-    for item in items:
-        p = d+'/'+item
-        # separate dir and file
-        if os.path.isdir(p) : # dir
-            dir_list.append(item)
-        elif os.path.isfile(p): # file
-            file_list.append(item)
-        else:
-            pass
-
-    items = sorted(dir_list) + sorted(file_list)
-    return items
+        print(str(file_count) + ' file'),
 
 def get_real_file_name(full_path, item):
     '''get the real file name of the link file'''
     global path
-    # print("")
 
     # get the real file abs path of the link file
     abs_path = os.path.realpath(full_path) 
     # get the relate path, there is bug!!
     rel_path = os.path.relpath(abs_path, full_path)[3:]
-    # print(abs_path)
-    # print(rel_path)
+
     # if the real file in the dir is the same as the link file
     if re.match(path, rel_path):
         item = rel_path[len(path) + 1:]
@@ -153,8 +134,10 @@ def real_file(full_path, item):
       If from a non-link file, will go normal '''
     global dir_count
     global file_count
-
-    mode = os.stat(full_path).st_mode
+    try:
+        mode = os.stat(full_path).st_mode
+    except OSError:
+        raise
 
     if os.path.isdir(full_path) : # dir
         dir_count += 1
@@ -189,21 +172,20 @@ def build_tree(d = '.'):
         items = os.listdir(d) 
     except OSError:
         print(d + ' Permission denied!')
-        sys.exit(1)
+        return
 
     items_sum = len(items)
 
-    #delete the '/' of the d if it has, e.g.: './'->'.''
-    if d[-1] == '/' and len(d) > 1:
-        d = d[:-1]
-
     # get all files and dirs in the dir
     for index, item in enumerate(sorted(items)): 
-        full_path = d + '/'+ item
-        mode = os.stat(full_path).st_mode
-
         # hide file
         if '.' == item[0] :
+            continue
+
+        full_path = os.path.join(d, item)
+        try:
+            mode = os.stat(full_path).st_mode
+        except OSError:
             continue
 
         # format the content
@@ -223,8 +205,10 @@ def build_tree(d = '.'):
         if os.path.islink(full_path): # link fle
             print_lnk(item)
             full_path, item = get_real_file_name(full_path, item)
-            # get_real_file_name(full_path, item)
-            real_file(full_path, item)
+            try:
+                real_file(full_path, item)
+            except OSError:
+                continue
         elif os.path.isdir(full_path) : # dir
             dir_count += 1
             print_dir(item)
@@ -235,19 +219,77 @@ def build_tree(d = '.'):
             # back from a dir, so length - 1
             last_dir.pop()
         else:
-            real_file(full_path, item)
+            try:
+                real_file(full_path, item)
+            except OSError:
+                continue
 
 def tree():
     global path
+
     print_dir(path)
 
-    if path[-1] == '/' and len(path) > 1:
-        path = path[:-1]
+    if '/' != path[-1]:
+        path += '/'
 
     build_tree(path)
+    print_result()
+    print('.')
+
+def format_file_size(byte):  
+    if byte <= 2**12:  # B  
+        size = byte
+        unit = ' B'
+    elif byte < 2**21:  # KB
+        size = float(byte)/2**10
+        unit = ' KB'
+    elif byte < 2**30:  # MB
+        size = float(byte)/2**20
+        unit = ' MB'
+    else:  # GB
+        size = float(byte)/2**30
+        unit = ' GB'
+
+    return size, unit
 
 def detail():
-    pass
+    global path
+    global dir_count
+    total_size = 0
+
+    try:
+        items = os.listdir(path) 
+    except OSError:
+        print(d + ' Permission denied!')
+        sys.exit(1)
+
+    for item in sorted(items):  
+        abs_path = os.path.join(path, item)
+        file_size = os.path.getsize(abs_path)
+        total_size += file_size
+        fmt_size, unit = format_file_size(file_size)
+
+        if ' B' == unit:
+            print((str(fmt_size).rjust(7) + unit).ljust(12)),
+        else:
+            print((str(float('%.2f' % fmt_size)).rjust(7) + unit).ljust(12)),
+
+        # print content
+        if os.path.islink(abs_path): # link fle
+            print_lnk(item)
+            full_path, item = get_real_file_name(abs_path, item)
+            # get_real_file_name(full_path, item)
+            real_file(abs_path, item)
+        elif os.path.isdir(abs_path) : # dir
+            dir_count += 1
+            print_dir(item)
+        else:
+            real_file(abs_path, item)
+
+    fmt_size, unit = format_file_size(total_size)
+
+    print_result()
+    print(', total size: ' + str(float('%6.2f' % fmt_size)) + unit + '.')
 
 def start(p = '.', option = 't'):
     global path
@@ -292,4 +334,3 @@ if "__main__" == __name__:
 
     main()
     
-    print_result()
