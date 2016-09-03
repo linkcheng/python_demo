@@ -78,7 +78,7 @@ def print_exe(name):
 
 def print_blk(name):
     print('\033[1;33;40m'),
-    print(name),
+    print(''+name+''),
     print('\033[0m')
 
 def print_dir(name):
@@ -137,12 +137,12 @@ def get_real_file_name(full_path, item):
     # get the real file abs path of the link file
     abs_path = os.path.realpath(full_path) 
     # get the relate path, there is bug!!
-    rel_path = os.path.relpath(abs_path, item)
+    rel_path = os.path.relpath(abs_path, full_path)[3:]
     # print(abs_path)
     # print(rel_path)
     # if the real file in the dir is the same as the link file
-    if re.match(path, rel_path[3:]):
-        item = rel_path[(3 + len(path) + 1):]
+    if re.match(path, rel_path):
+        item = rel_path[len(path) + 1:]
     else:
         item = rel_path
 
