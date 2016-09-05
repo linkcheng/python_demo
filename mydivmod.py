@@ -14,13 +14,6 @@ def mydivmod(dividend, divisor):
         return 0, 0
 
     if dividend * divisor > 0:
-        tmp = 1
-    else:
-        tmp = -1
-
-    quotient = tmp
-
-    if dividend * divisor > 0:
         quotient = 1
         while False if abs(quotient) * abs(divisor) > abs(dividend) else True:
             quotient += 1
