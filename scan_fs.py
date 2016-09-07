@@ -49,7 +49,8 @@ def usage():
 
 def use_platform():
     sysstr = platform.system()
-    if (sysstr == 'Linux'):
+    print(sysstr)
+    if (sysstr == 'Linux' or sysstr == 'Darwin'):
         pass
     else:
         print('This must be run on Linux system!')
@@ -325,8 +326,11 @@ def main():
     elif options.has_key('-t'): 
         start(options['-t'], 't')
     # only the default para
-    else: 
-        start(sys.argv[1:][0])
+    else:
+        if sys.argv[1:]:
+            start(sys.argv[1:][0])
+        else:
+            start('.')
         
 if "__main__" == __name__:
     use_platform()
