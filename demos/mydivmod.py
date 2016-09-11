@@ -24,11 +24,11 @@ def mydivmod(dividend, divisor):
     quotient = step
 
     # a // b = c, if want to get c, we can use  b * c = a - t to get c and t.
-    while True if abs(quotient) * abs(divisor) < abs(dividend) else False:
+    while if abs(quotient) * abs(divisor) < abs(dividend):
         quotient += step
 
     # If step is 1 and remainder is not 0, means quotient is bigger one than needed; 
-    if 1 == step and quotient * divisor is not dividend:
+    if 1 == step and quotient * divisor != dividend:
         quotient -= 1
 
     return quotient, dividend - quotient * divisor
