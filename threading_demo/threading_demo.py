@@ -1,5 +1,6 @@
 import logging
 import threading
+import time
  
 def get_logger():
     logger = logging.getLogger("threading_example")
@@ -31,5 +32,6 @@ if __name__ == '__main__':
         my_thread = threading.Thread(
             target=doubler, name=thread_names[i], args=(i, logger))
         my_thread.start()
+        time.sleep(30)
 
 

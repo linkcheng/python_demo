@@ -56,13 +56,18 @@ def gevent_test():
     gevent_demo.demo_run()
 
 
+def make_counter_test():
+    import nonlocal_demo
+    nonlocal_demo.make_counter()
+
 def main():
     # my_sqrt_test()
     # reverse_sentense_test()
     # compare_str_test()
     # max_subarray_test()
     # g_test()
-    gevent_test()
+    # gevent_test()
+    make_counter_test()
 
 if '__main__' == __name__:
     main()
