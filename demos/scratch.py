@@ -59,6 +59,20 @@ def celery_test():
         return x + y
 
 
+def curl_test():
+    import StringIO
+    import pycurl
+
+    c = pycurl.Curl()
+    b = StringIO.StringIO()
+    c.setopt(pycurl.URL, "http://t.cn/aKln8T")
+    c.setopt(pycurl.WRITEFUNCTION, b.write)
+    c.setopt(pycurl.FOLLOWLOCATION, 1)
+
+    c.perform()
+    print c.getinfo(pycurl.EFFECTIVE_URL)
+
+
 import time, sched
 
 # 实例化一个sched对象
@@ -150,11 +164,31 @@ def account_email():
     l = [(account, accounts[index % len_account]) for index, account in enumerate(emails)]
     print l
 
+
+def mongo_test():
+    import pymongo
+    # 建立连接
+    clinet = pymongo.MongoClient("localhost", 27017)
+    # 获取数据库
+    db = clinet["PornHub"]
+    # 连接集合（表）
+    table = db["PhRes"]
+    records = table.find({})
+    for record in records:
+        print(record)
+
+
+def tensorflow_test():
+    import tensorflow as tf
+    hello = tf.constant('Hello, TensorFlow!')
+    sess = tf.Session()
+    print(sess.run(hello))
+
+
 def main():
     # gettext_test()
 
     # redis_test()
-    # print('redis_test over')
 
     # celery_test()
 
@@ -166,7 +200,13 @@ def main():
 
     # qrcode_test()
 
-    account_email()
+    # account_email()
+
+    # mongo_test()
+
+    # tensorflow_test()
+
+    curl_test()
 
 if __name__ == '__main__':
     main()
