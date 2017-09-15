@@ -66,6 +66,7 @@ def curl_test():
     c = pycurl.Curl()
     b = StringIO.StringIO()
     c.setopt(pycurl.URL, "http://t.cn/aKln8T")
+    # 把StringIO的写函数注册到pycurl的WRITEFUNCTION中，即pycurl所有获取的内容都写入到StringIO中，如果没有这一句，pycurl就会把所有的内容在默认的输出器中输出
     c.setopt(pycurl.WRITEFUNCTION, b.write)
     c.setopt(pycurl.FOLLOWLOCATION, 1)
 
@@ -185,6 +186,106 @@ def tensorflow_test():
     print(sess.run(hello))
 
 
+def binary_search(array, key):
+    left = 0
+    right = len(array) - 1
+
+    while left <= right:
+        mid = (left + right) / 2
+
+        if key == array[mid]:
+            return mid
+        elif key > array[mid]:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1
+
+
+def separate_float(number):
+    chn = ('零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖')
+    unit = ('分', '角', '元', '拾', '佰', '仟', '万', '亿')
+    ('元', '拾', '佰', '仟', '万', '亿')
+
+    f_nub = float(number)
+    i_num = int(number)
+    d_num = f_nub - i_num
+
+
+class ChineseCapitalForm(object):
+    measure = cdict = {1: u'', 2: u'拾', 3: u'佰', 4: u'仟'}
+    unit = xdict = {1: u'元', 2: u'万', 3: u'亿', 4: u'兆'}
+    chn = gdict = {'0': u'零', '1': u'壹', '2': u'贰', '3': u'叁', '4': u'肆',
+                   '5': u'伍', '6': u'陆', '7': u'柒', '8': u'捌', '9': u'玖'}
+
+    @staticmethod
+    def split_num(num_str):
+        """拆分函数，将整数字符串拆分成[亿，万，仟]的list"""
+
+        num_list = []
+        i = len(num_str) % 4
+        len_num = len(num_str) - 1
+
+        if i > 0:
+            num_list.append(num_str[:i])
+
+        while i <= len_num:
+            num_list.append(num_str[i: i+4])
+            i += 4
+        return num_list
+
+    def translate_num(self, num_str):
+        """对[亿，万，仟]的list中每个字符串分组进行大写化再合并"""
+
+        len_num = len(num_str)
+        capital = u''
+        for i, num in enumerate(num_str):
+            if num == '0':
+                # 如果i不是最后一位并且i下一位不是0
+                if i < len_num-1 and num_str[i+1] != '0':
+                    capital += self.chn[num_str[i]]
+            else:
+                capital = capital + self.chn[num_str[i]] + self.measure[len_num-i]
+        return capital
+
+    def transform(self, numeral):
+        """转换数字为大写中文"""
+
+        integer_num_str, decimal_num_str = str(numeral).split('.')
+        capital = u''
+
+        # 分解字符数组[亿，万，仟]三组List:['0000','0000','0000']
+        integer_num_list = self.split_num(integer_num_str)
+
+        # 获取拆分后的List长度，大写合并
+        for i, num_str in enumerate(integer_num_list):
+            # 有可能一个字符串全是0的情况
+            tmp = self.translate_num(num_str)
+            capital += tmp
+            if tmp:
+                # 合并：前字符串大写+当前字符串大写+标识符
+                capital += self.unit[len(integer_num_list)-i]
+
+        # 处理小数部分
+        if len(decimal_num_str) == 1:  # 若小数只有1位
+            if int(decimal_num_str[0]) == 0:
+                capital += u'整'
+            else:
+                capital = capital + self.chn[decimal_num_str[0]] + u'角整'
+        else:  # 若小数有两位的四种情况
+            tenths, percentile = decimal_num_str
+            if tenths == '0' and percentile != '0':
+                capital = capital + u'零' + self.chn[percentile] + u'分'
+            elif tenths == '0' and percentile == '0':
+                capital += u'整'
+            elif tenths != '0' and percentile != '0':
+                capital = capital + self.chn[tenths] + u'角' + self.chn[percentile] + u'分'
+            else:
+                capital = capital + self.chn[tenths] + u'角整'
+        return capital
+
+
 def main():
     # gettext_test()
 
@@ -206,7 +307,12 @@ def main():
 
     # tensorflow_test()
 
-    curl_test()
+    # curl_test()
+
+    # print(binary_search(range(100), 13))
+
+    pt = ChineseCapitalForm()
+    print pt.transform('600190101000.80')
 
 if __name__ == '__main__':
     main()
