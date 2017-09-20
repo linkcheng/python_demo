@@ -203,16 +203,6 @@ def binary_search(array, key):
     return -1
 
 
-def separate_float(number):
-    chn = ('零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖')
-    unit = ('分', '角', '元', '拾', '佰', '仟', '万', '亿')
-    ('元', '拾', '佰', '仟', '万', '亿')
-
-    f_nub = float(number)
-    i_num = int(number)
-    d_num = f_nub - i_num
-
-
 class ChineseCapitalForm(object):
     measure = cdict = {1: u'', 2: u'拾', 3: u'佰', 4: u'仟'}
     unit = xdict = {1: u'元', 2: u'万', 3: u'亿', 4: u'兆'}
@@ -274,7 +264,7 @@ class ChineseCapitalForm(object):
             else:
                 capital = capital + self.chn[decimal_num_str[0]] + u'角整'
         else:  # 若小数有两位的四种情况
-            tenths, percentile = decimal_num_str
+            tenths, percentile = decimal_num_str[0], decimal_num_str[1]
             if tenths == '0' and percentile != '0':
                 capital = capital + u'零' + self.chn[percentile] + u'分'
             elif tenths == '0' and percentile == '0':
