@@ -97,6 +97,7 @@ def bubble_sort(arr):
             print(arr)
     return arr
 
+
 import threading
 
 Lock = threading.Lock()

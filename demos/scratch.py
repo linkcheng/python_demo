@@ -1,6 +1,27 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import time
+from functools import wraps
+import threading
+
+def fn_timer(function):
+    """
+    计算 function 的运算时间
+    :param function:
+    :return:
+    """
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        start = time.time()
+        result = function(*args, **kwargs)
+        end = time.time()
+
+        print('Total time running %s: %s seconds' % (function.func_name, str(end - start)))
+        return result
+
+    return function_timer
+
 
 def gettext_test():
     import locale
@@ -276,6 +297,50 @@ class ChineseCapitalForm(object):
         return capital
 
 
+@fn_timer
+def test_fibonacci_recursive(n):
+    print fibonacci_recursive(n)
+
+
+@fn_timer
+def test_fibonacci(n):
+    print fibonacci(n)
+
+
+def fibonacci(n):
+    cur, nxt = 0, 1
+
+    for i in range(n):
+        cur, nxt = nxt, cur + nxt
+
+    return cur
+
+
+def fibonacci_recursive(n):
+    if n <= 0:
+        return 0
+
+    return 1 if n == 1 else fibonacci_recursive(n-1) + fibonacci_recursive(n-2)
+
+
+def test_f():
+    ts = []
+
+    t1 = threading.Thread(target=test_fibonacci, args=(30,), name='test_fibonacci')
+    t1.setDaemon(True)
+    ts.append(t1)
+
+    t2 = threading.Thread(target=test_fibonacci_recursive, args=(30,), name='test_fibonacci_recursive')
+    t2.setDaemon(True)
+    ts.append(t2)
+
+    for t in ts:
+        t.start()
+
+    for t in ts:
+        t.join()
+
+
 def main():
     # gettext_test()
 
@@ -301,8 +366,11 @@ def main():
 
     # print(binary_search(range(100), 13))
 
-    pt = ChineseCapitalForm()
-    print pt.transform('600190101000.80')
+    # pt = ChineseCapitalForm()
+    # print pt.transform('600190101000.80')
+
+    test_f()
+
 
 if __name__ == '__main__':
     main()
