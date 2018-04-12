@@ -13,7 +13,7 @@ default_logging_config = {
     'disable_existing_loggers': False,
     'formatters': {
         'simple': {
-            'format': '%(asctime)s %(levelname)-8s %(pathname)s[line:%(lineno)d] %(message)s'        }
+            'format': '%(asctime)s %(levelname)s %(filename)s line:%(lineno)d %(message)s'}
     },
 
     'handlers': {
@@ -41,24 +41,18 @@ default_logging_config = {
 }
 
 info_file_handler = {
-    # 如果没有使用并发的日志处理类，在多实例的情况下日志会出现缺失
-    # 'class': 'cloghandler.ConcurrentRotatingFileHandler',
-    'class': 'logging.handlers.RotatingFileHandler',
+    'class': 'logging.handlers.TimedRotatingFileHandler',
     'level': 'INFO',
     'formatter': 'simple',
-    # 当达到 10MB 时分割日志
-    'maxBytes': 10485760,
-    # 最多保留 20 份文件
-    'backupCount': 20,
+    'when': 'D',
     'encoding': 'utf8'
 }
 
 error_file_handler = {
-    'class': 'logging.handlers.RotatingFileHandler',
+    'class': 'logging.handlers.TimedRotatingFileHandler',
     'level': 'ERROR',
     'formatter': 'simple',
-    'maxBytes': 10485760,
-    'backupCount': 20,
+    'when': 'D',
     'encoding': 'utf8'
 }
 
@@ -68,8 +62,8 @@ def configure_logging():
     if not os.path.exists(log_path):
         os.mkdir(log_path)
 
-    info_file_name = os.path.join(log_path, 'info_'+datetime.now().strftime('%Y%m%d')+'.log')
-    error_file_name = os.path.join(log_path, 'error_'+datetime.now().strftime('%Y%m%d')+'.log')
+    info_file_name = os.path.join(log_path, 'info.log')
+    error_file_name = os.path.join(log_path, 'error.log')
 
     info_file_handler.update(filename=info_file_name)
     error_file_handler.update(filename=error_file_name)
