@@ -98,6 +98,60 @@ def bubble_sort(arr):
     return arr
 
 
+from heapq import merge
+
+
+def merge1(a, b):
+    temp = []
+    i = j = 0
+    la = len(a)
+    lb = len(b)
+
+    while i < la and j < lb:
+        if a[i] < b[j]:
+            temp.append(a[i])
+            i += 1
+        else:
+            temp.append(b[j])
+            j += 1
+
+    remain, r = (a, i) if i < j else (b, j)
+
+    lr = len(remain)
+    while r < lr:
+        temp.append(remain[r])
+        r += 1
+
+    return temp
+
+
+def merge2(left, right):
+    merged = []
+
+    while left and right:
+        merged.append(left.pop(0) if left[0] <= right[0] else right.pop(0))
+
+    while left:
+        merged.append(left.pop(0))
+
+    while right:
+        merged.append(right.pop(0))
+
+    return merged
+
+
+def merge_sort(array):
+    length = len(array)
+    if length <= 1:
+        return array
+
+    mid = length // 2
+    left = merge_sort(array[:mid])
+    right = merge_sort(array[mid:])
+
+    return list(merge(left, right))
+
+
 @fn_timer
 def sort_main():
     array = [
