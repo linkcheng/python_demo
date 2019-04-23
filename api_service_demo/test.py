@@ -185,16 +185,16 @@ def get_id_nums():
 
 def dbutils_test():
 
-    SHOUFUYOU_V2_CONFIG = {
-        'host': '47.93.76.136',
+    V2_CONFIG = {
+        'host': '12.34.12.34',
         'port': 3306,
         'user': 'root',
-        'password': 'test1111SFY1024#',
-        'db': 'shoufuyou_v2',
+        'password': '12341234',
+        'db': 'v2',
         'charset': 'utf8',
     }
 
-    pool = PooledDB(pymysql, 50, **SHOUFUYOU_V2_CONFIG)
+    pool = PooledDB(pymysql, 50, **V2_CONFIG)
     conn = pool.connection()
     cur = conn.cursor()
 
