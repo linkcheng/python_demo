@@ -7,6 +7,6 @@ from settings import system_config
 from common.dbhelper import DBHelper
 
 
-db = MySQLDatabase(XINYONGFEI_MODEL, **XINYONGFEI_MODEL_CONFIG)
+db = MySQLDatabase(MODEL, **MODEL_CONFIG)
 
 
