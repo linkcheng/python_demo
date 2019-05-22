@@ -9,6 +9,7 @@
     ImportError: Please install python-snappy
     pip install python-snappy
 """
+from werkzeug.utils import cached_property
 from pykafka import KafkaClient
 from pykafka.common import OffsetType
 
@@ -46,19 +47,12 @@ def read_from_kafka(hosts: str, topic_name: str, zk_hosts: str = ZK_HOSTS):
             # print message
             if message is not None:
                 # 打印接收到的消息体的偏移个数和值
-                print(message.offset, message.value)
+                yield (message.offset, message.value)
     except KeyboardInterrupt:
         print(message.offset if message else 0)
 
 
 class SQLBuilder:
-    route_table = {
-        'insert': ('insert', 'bootstrap-insert'),
-        'update': ('update', ),
-        'delete': ('delete', ),
-        'table-alter': ('alter table', ),
-    }
-
     def __init__(self, database, table, columns=None, mode=None):
         """\
         构造器
@@ -71,106 +65,109 @@ class SQLBuilder:
         """
         self.database = database
         self.table = table
-        self.columns = columns
         self.mode = mode
-        self.sql_template = self.insert_sql_template(mode)
-        self.sql = None
+        self.columns = None
         if columns:
-            self.sql = self.sql_format(
-                self.sql_template,
-                self.database,
-                self.table,
-                self.columns
-            )
+            self.build(columns)
 
-    @staticmethod
-    def sql_format(sql, database, table, columns):
-        return sql.format(database=database, table=table, columns=columns, )
-
-    @staticmethod
-    def insert_sql_template(mode):
-        if not mode:
-            sql = """
-                insert into `{database}`.`{table}` ({','.join(columns)}) 
-                values ({','.join(['%s'] * len(columns))});
-            """
-        elif mode == 'ignore':
-            sql = """
-                insert ignore into `{database}`.`{table}` ({','.join(columns)}) 
-                values ({','.join(['%s'] * len(columns))});
-            """
-        elif mode == 'replace':
-            sql = """replace into `{database}`.`{table}` ({','.join(columns)}) 
-                values ({','.join(['%s'] * len(columns))});"""
+    @property
+    def sql(self):
+        """\
+        暂且仅 insert 模式支持
+        :return:
+        """
+        if not self.mode:
+            sql = f"""insert into `{self.database}`.`{self.table}` ({','.join(self.columns)}) 
+                values ({','.join(['%s'] * len(self.columns))});"""
+        elif self.mode == 'ignore':
+            sql = f"""insert ignore into `{self.database}`.`{self.table}` ({','.join(self.columns)}) 
+                values ({','.join(['%s'] * len(self.columns))});"""
+        elif self.mode == 'replace':
+            sql = f"""replace into `{self.database}`.`{self.table}` ({','.join(self.columns)}) 
+                values ({','.join(['%s'] * len(self.columns))});"""
         else:
             sql = ""
         return sql
 
-    @staticmethod
-    def insert_values(datas, keys):
-        return [[data.get(k) for k in keys] for data in datas]
+    def build(self, columns):
+        self.columns = columns
+        return self.sql
 
-    def route(self, values):
-        router = {
-            'insert': [],
-            'update': [],
-            'delete': [],
-        }
-        for value in values:
-            action_type = value.get('type')
-            if action_type in self.route_table['insert']:
-                router['insert'].append(value)
-            elif action_type in self.route_table['update']:
-                router['update'].append(value)
-            elif action_type in self.route_table['delete']:
-                router['delete'].append(value)
-
-    def insert(self, value, keys=None):
+    def insert(self, datas, keys=None, columns=None):
         """\
         基于原始数据生成 insert_ignore_sql
-        :param value: 数据
-        {
-            "database": "test",
-            "table": "User",
-            "type": "bootstrap-insert",
-            "ts": 1558339701,
-            "data": {
+        :param datas: 数据
+        [
+            {
                 "id": 1,
-                "name": null,
                 "mobile": "15888888888",
-                "password_digest": "",
-                "email": null,
                 "created_time": "2019-05-18 17:59:59",
-                "last_login_time": "2019-05-18 17:59:59",
                 "gender": "other",
-                "person_id": 0,
                 "utm_source": "小白信用分",
                 "updated_time": "2019-05-18 17:59:59",
-            }
-        }
+            },
+            {}
+        ]
         :param keys: None or [],
             表示从 value 中获取的数据关键字，
             如果为 None 表示使用 value 中 data 的所有 key
+        :param columns: None or [], 数据表的列
+            如果为 None，表示从原数据提取
         :return: SQL: str
         """
-        data = value.get('data')
-
-        if not data:
-            # 没有数据表示没有数据，不能生成 sql
-            return ''
+        if len(datas) > 0:
+            data = datas[0]
+        else:
+            return
 
         if not keys:
             keys = list(data.keys())
 
-        vals = self.insert_values(data, keys)
+        if not columns:
+            columns = self.columns or keys
 
-        sql = self.sql_format(
-            self.sql_template,
-            self.database,
-            self.table,
-            self.columns
-        )
+        sql = self.sql if columns == self.columns else self.build(columns)
+        values = [[data.get(k) for k in keys] for data in datas if data]
+
+        return sql, values
+
+
+class BootstrapInsert:
+    route_table = {
+        'insert': ('insert', 'bootstrap-insert'),
+        'update': ('update', ),
+        'delete': ('delete', ),
+        'table-alter': ('alter table', ),
+    }
+
+    def __init__(self, values):
+        self.insert = []
+        self.update = []
+        self.delete = []
+
+        for value in values:
+            action_type = value.get('type')
+            if action_type in self.route_table['insert']:
+                self.insert.append(value)
+            elif action_type in self.route_table['update']:
+                self.update.append(value)
+            elif action_type in self.route_table['delete']:
+                self.delete.append(value)
 
 
 if __name__ == '__main__':
-    read_from_kafka(HOSTS, 'ns_alluser_xinyongfei_cs_StarUser')
+    # offset, value = read_from_kafka(HOSTS, 'ns_alluser_xinyongfei_cs_StarUser')
+
+    db, t = 'xinyongfei_cs', 'StarUser'
+    datas = [
+        {
+            "id": 1,
+            "mobile": "15888888888",
+            "created_time": "2019-05-18 17:59:59",
+            "gender": "other",
+            "utm_source": "小白信用分",
+            "updated_time": "2019-05-18 17:59:59",
+        },
+    ]
+    builder = SQLBuilder(db, t)
+    print(builder.insert(datas))
