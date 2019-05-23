@@ -17,7 +17,7 @@ from threading import Thread
 
 import pymysql
 from pymysql.cursors import DictCursor
-from pymysql.err import Error
+from pymysql.err import Error, OperationalError
 from pykafka import KafkaClient
 
 HOSTS = "hh001:6667,hh002:6667,hh003:6667"
@@ -55,7 +55,15 @@ class MySQLDBHelper:
     def execute(self, sql, args=None):
         try:
             result = self.cr.execute(sql, args)
-        except Exception:
+        except OperationalError:
+            self.conn.ping()
+            result = self.cr.execute(sql, args)
+        return result
+
+    def executemany(self, sql, args=None):
+        try:
+            result = self.cr.executemany(sql, args)
+        except OperationalError:
             self.conn.ping()
             result = self.cr.execute(sql, args)
         return result
@@ -219,11 +227,11 @@ class Consumer(Observer):
         :param mode: 写入目标库的模式, str
         :param keys: 用户读取 reader 产生的数据的key,[]
         """
-        self.q = Queue(1_000_000)
+        self.q = Queue(50_000)
         # 'bootstrap-insert' 类型的消息会顺势产生大量数据，需要一个穿冲队列
         self.insert_buffer = []
         # 缓冲队列最大值
-        self.max_buf_size = 10_000
+        self.max_buf_size = 5_000
 
         # todo: 先获取上次的 offset
         self.offset = 0
@@ -237,7 +245,7 @@ class Consumer(Observer):
 
         # 子线程与主线程通信的队列
         # todo: 是不是应该使用线程池的方式
-        self.tasks = Queue(100)
+        self.tasks = Queue(10)
         # 表示主线程处理的当前任务
         self.current = None
         # 主线程循环结束标志位
@@ -307,13 +315,21 @@ class Consumer(Observer):
 
     def _term_handler(self, signal_num, frame):
         """系统信号量处理"""
+        self.term_flag = True
         if self.current and self.current.isAlive():
             self.current.join()
-            self.term_flag = True
+        exit(1)
 
     def execute(self, sql, args):
         """执行 sql"""
-        result = self.db.execute(sql, args)
+        result = None
+        try:
+            result = self.db.executemany(sql, args)
+        except Exception as e:
+            print(e)
+            self.db.rollback()
+        else:
+            self.db.commit()
         # todo: offset 保存, 每消费一条数据更新一次
         return result
 
@@ -327,7 +343,7 @@ class Message:
 if __name__ == '__main__':
     # kafka = KafkaReader(HOSTS, 'ns_alluser_xinyongfei_cs_StarUser')
 
-    db, t = 'xinyongfei_cs', 'StarUser'
+    d, t = 'shoufuyou_statistics', 'StarUser'
     v1 = {
         "database": "shoufuyou_v2",
         "table": "User",
@@ -335,7 +351,7 @@ if __name__ == '__main__':
         "ts": 15583311111,
         "data": {
             "id": 1,
-            "mobile": "15868112314",
+            "mobile": "15868112222",
             "created_time": "2019-05-18 17:59:59",
             "gender": "other",
             "utm_source": "小白信用分",
@@ -350,8 +366,7 @@ if __name__ == '__main__':
         "type": "bootstrap-insert",
         "ts": 1558332314,
         "data": {
-            "id": 1,
-            "mobile": "15868112314",
+            "mobile": "15868113333",
             "created_time": "2019-05-19 17:59:59",
             "gender": "other",
             "utm_source": "大白信用分",
@@ -360,7 +375,7 @@ if __name__ == '__main__':
 
         }
     }
-    # consumer = Consumer(db, t)
+    # consumer = Consumer(d, t)
     #
     # msg1 = Message(1, v1)
     # consumer.update(msg1)
@@ -375,11 +390,21 @@ if __name__ == '__main__':
     # r = db.execute("set wait_timeout=10;")
     # r = db.execute("set interactive_timeout=10;")
     # r = db.execute("select * from StarUser;")
-    # values = db.cr.fetchall() or []
+    # values = db.cr.fetchall()    or []
     # print(values)
     #
-    # time.sleep(15)
-
+    # # time.sleep(15)
+    #
+    # sql = """insert into `shoufuyou_statistics`.`StarUser`
+    # (mobile,created_time,gender,utm_source,updated_time,app_source)
+    # values (%s,%s,%s,%s,%s,%s);"""
+    # args = (
+    #     ('15583311111', '2019-05-18 17:59:59', 'other', '小白信用分', '2019-05-18 17:59:59', ''),
+    #     ('15868112315', '2019-05-19 17:59:59', 'other', '大白信用分', '2019-05-19 17:59:59', '')
+    # )
+    #
+    # r = db.executemany(sql, args)
+    # db.commit()
     # r = db.execute("select * from StarUser;")
     # values = db.cr.fetchall() or []
     # print(values)
