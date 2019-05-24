@@ -10,6 +10,7 @@
     pip install python-snappy
 """
 import time
+import json
 import signal
 from abc import ABCMeta, abstractmethod
 from queue import Queue, Empty
@@ -20,7 +21,7 @@ from pymysql.cursors import DictCursor
 from pymysql.err import Error, OperationalError
 from pykafka import KafkaClient
 
-HOSTS = "hh001:6667,hh002:6667,hh003:6667"
+HOSTS = "hh001:9092,hh002:9092,hh003:9092"
 ZK_HOSTS = 'hh001:2181,hh002:2181,hh003:2181'
 
 IP = '127.0.0.1'
@@ -107,21 +108,35 @@ class KafkaReader(Reader):
         self.topic = self.client.topics[topic_name]
 
     def read(self):
+        print('start read')
         message = None
 
+        # v1 = b"{'database': 'shoufuyou_v2', 'table': 'User', 'type': 'bootstrap-insert', 'ts': 15583311111, 'data': {'id': 1, 'mobile': '15868112222', 'created_time': '2019-05-18 17:59:59', 'gender': 'other', 'utm_source': '\xe5\xb0\x8f\xe7\x99\xbd\xe4\xbf\xa1\xe7\x94\xa8\xe5\x88\x86', 'updated_time': '2019-05-18 17:59:59', 'app_source': ''}}"
+        #
+        # msg1 = Message(1, v1)
+        # self.notify(msg1)
+
+        # 若想从头消费数据，则可以设置"auto.offset.reset"为"earliest"，
+        # 注意要使用一个全新的group.id，即启用一个新的消费者组，否则是不起作用的。
         balanced_consumer = self.topic.get_balanced_consumer(
             consumer_group=f'{self.topic_name}_group',
             auto_commit_enable=True,
             zookeeper_connect=self.zk_hosts
         )
 
-        try:
-            for message in balanced_consumer:
-                if message is not None:
-                    # self.notify((message.offset, message.value))
-                    self.notify(message)
-        except KeyboardInterrupt:
-            print(message.offset if message else 0)
+        partitions = self.topic.partitions
+        print("分区 {}".format(partitions))
+        earliest_offsets = self.topic.earliest_available_offsets()
+        print("最早可用offset {}".format(earliest_offsets))
+        last_offsets = self.topic.latest_available_offsets()
+        print("最近可用offset {}".format(last_offsets))
+        offset = balanced_consumer.held_offsets
+        print("当前消费者分区offset情况{}".format(offset))
+
+        for message in balanced_consumer:
+            if message is not None:
+                print(message.offset, message.value)
+                self.notify(message)
 
 
 class SQLBuilder:
@@ -277,12 +292,16 @@ class Consumer(Observer):
                     self.offset = msg.offset
                     # todo: offset 保存至 zookeeper 上每消费一条数据更新一次
 
+    @staticmethod
+    def format(value):
+        return json.loads(value)
+
     def route(self, message):
         """对 message 进行路由处理"""
         if not message:
             return True
 
-        value = message.value
+        value = self.format(message.value)
         action_type = value.get('type')
         if action_type in self.router_table['insert']:
             data = value.get('data')
@@ -323,6 +342,7 @@ class Consumer(Observer):
     def execute(self, sql, args):
         """执行 sql"""
         result = None
+        print(sql, args)
         try:
             result = self.db.executemany(sql, args)
         except Exception as e:
@@ -341,40 +361,48 @@ class Message:
 
 
 if __name__ == '__main__':
-    # kafka = KafkaReader(HOSTS, 'ns_alluser_xinyongfei_cs_StarUser')
-
     d, t = 'shoufuyou_statistics', 'StarUser'
-    v1 = {
-        "database": "shoufuyou_v2",
-        "table": "User",
-        "type": "bootstrap-insert",
-        "ts": 15583311111,
-        "data": {
-            "id": 1,
-            "mobile": "15868112222",
-            "created_time": "2019-05-18 17:59:59",
-            "gender": "other",
-            "utm_source": "小白信用分",
-            "updated_time": "2019-05-18 17:59:59",
-            "app_source": "",
+    kafka = KafkaReader(HOSTS, 'ns_alluser_xinyongfei_cs_StarUser')
+    cols = ['mobile', 'created_time', 'gender', 'utm_source', 'updated_time', 'app_source']
+    consumer = Consumer(d, t, cols, 'ignore', cols)
+    kafka.attach(consumer)
 
-        }
-    }
-    v2 = {
-        "database": "shoufuyou_v2",
-        "table": "User",
-        "type": "bootstrap-insert",
-        "ts": 1558332314,
-        "data": {
-            "mobile": "15868113333",
-            "created_time": "2019-05-19 17:59:59",
-            "gender": "other",
-            "utm_source": "大白信用分",
-            "updated_time": "2019-05-19 17:59:59",
-            "app_source": "",
+    reader = Thread(target=kafka.read)
+    reader.start()
+    consumer.run()
 
-        }
-    }
+    # v1 = {
+    #     "database": "shoufuyou_v2",
+    #     "table": "User",
+    #     "type": "bootstrap-insert",
+    #     "ts": 15583311111,
+    #     "data": {
+    #         "id": 1,
+    #         "mobile": "15868112222",
+    #         "created_time": "2019-05-18 17:59:59",
+    #         "gender": "other",
+    #         "utm_source": "小白信用分",
+    #         "updated_time": "2019-05-18 17:59:59",
+    #         "app_source": "",
+    #
+    #     }
+    # }
+    # msg1 = Message(1, v1)
+    # v2 = {
+    #     "database": "shoufuyou_v2",
+    #     "table": "User",
+    #     "type": "bootstrap-insert",
+    #     "ts": 1558332314,
+    #     "data": {
+    #         "mobile": "15868113333",
+    #         "created_time": "2019-05-19 17:59:59",
+    #         "gender": "other",
+    #         "utm_source": "大白信用分",
+    #         "updated_time": "2019-05-19 17:59:59",
+    #         "app_source": "",
+    #
+    #     }
+    # }
     # consumer = Consumer(d, t)
     #
     # msg1 = Message(1, v1)
