@@ -188,9 +188,10 @@ class SQLBuilder:
             {
                 "id": 1,
                 "mobile": "15888888888",
-                "created_time": "2019-05-18 17:59:59",
                 "gender": "other",
+                "person_id": 0,
                 "utm_source": "小白信用分",
+                "created_time": "2019-05-18 17:59:59",
                 "updated_time": "2019-05-18 17:59:59",
             },
             {}
@@ -218,6 +219,39 @@ class SQLBuilder:
 
         return sql, values
 
+    def update(self, datas, keys=None, columns=None):
+        """
+
+        :param datas:
+        [
+            {
+                "database": "xinyongfei_cs",
+                "table": "StarUser",
+                "type": "update",
+                "ts": 1559206362,
+                "xid": 1032831,
+                "commit": true,
+                "data": {
+                    "id": 1111111761,
+                    "name": null,
+                    "mobile": "13596001112",
+                    "person_id": 100,
+                    "utm_source": "QD-ZC-EP04",
+                    "created_time": "2019-05-25 13:47:38",
+                    "updated_time": "2019-05-30 08:52:42",
+                },
+                "old": {
+                    "person_id": 0,
+                    "updated_time": "2019-05-25 05:47:38"
+                }
+            }
+        ]
+        :param keys:
+        :param columns:
+        :return:
+        """
+        return '', ''
+
 
 class Observer(metaclass=ABCMeta):
     @abstractmethod
@@ -243,8 +277,9 @@ class Consumer(Observer):
         :param keys: 用户读取 reader 产生的数据的key,[]
         """
         self.q = Queue(50_000)
-        # 'bootstrap-insert' 类型的消息会顺势产生大量数据，需要一个穿冲队列
+        # 消息会产生大量数据，需要一个穿冲队列
         self.insert_buffer = []
+        self.update_buffer = []
         # 缓冲队列最大值
         self.max_buf_size = 5_000
 
@@ -306,6 +341,9 @@ class Consumer(Observer):
         if action_type in self.router_table['insert']:
             data = value.get('data')
             self.insert_buffer.append(data)
+        elif action_type in self.router_table['update']:
+            data = value.get('data')
+            self.update_buffer.append(data)
 
         return len(self.insert_buffer) >= self.max_buf_size
 
@@ -316,6 +354,11 @@ class Consumer(Observer):
             if all((sql, values)):
                 self.tasks.put(Thread(target=self.execute, args=(sql, values)))
             self.insert_buffer = []
+        if self.update_buffer:
+            sql, values = self.builder.update(self.update_buffer, self.keys)
+            if all((sql, values)):
+                self.tasks.put(Thread(target=self.execute, args=(sql, values)))
+            self.update_buffer = []
 
     def run(self):
         """主线程负责执行子线程生成的任务"""

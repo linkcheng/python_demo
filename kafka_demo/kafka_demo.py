@@ -72,8 +72,33 @@ def consumer():
         zookeeper_connect='hh001:2181,hh002:2181,hh0013:2181'
     )
 
+    partitions = topic.partitions
+    print("分区 {}".format(partitions))
+    earliest_offsets = topic.earliest_available_offsets()
+    print("最早可用offset {}".format(earliest_offsets))
+    last_offsets = topic.latest_available_offsets()
+    print("最近可用offset {}".format(last_offsets))
+    offset = balanced_consumer.held_offsets
+    print("当前消费者分区offset情况{}".format(offset))
+
+    """
+    LAST_N_MESSAGES = 50
+    # how many messages should we get from the end of each partition?
+    MAX_PARTITION_REWIND = int(math.ceil(LAST_N_MESSAGES / len(consumer._partitions)))
+    # find the beginning of the range we care about for each partition
+    offsets = [(p, op.last_offset_consumed - MAX_PARTITION_REWIND)
+               for p, op in balanced_consumer._consumer._partitions.items()]
+    # if we want to rewind before the beginning of the partition, limit to beginning
+    offsets = [(p, (o if o > -1 else -2)) for p, o in offsets] 
+    # reset the consumer's offsets
+    balanced_consumer.reset_offsets(offsets)
+    balanced_consumer.reset_offsets([(topic.partitions[0], -2), (topic.partitions[1], 10)])
+
+    """
+    balanced_consumer.reset_offsets([()])
+
     for message in balanced_consumer:
         # print message
         if message is not None:
             # 打印接收到的消息体的偏移个数和值
-            print(message.offset, message.value)
+            print(message.partition, message.offset, message.value)
