@@ -77,11 +77,11 @@ WSGI_APPLICATION = 'www.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # 数据库引擎
-        'NAME': 'data_pipeline',                # 要存储数据的库名，事先要创建之
-        'HOST': 'localhost',
+        'NAME': 'data_pipeline',                # 要存储数据的库名，事先要创建
+        'HOST': '47.95.20.63',
         'PORT': '3306',
-        'USER': 'root',
-        'PASSWORD': '12345678',
+        'USER': 'admin',
+        'PASSWORD': 'admin123',
     },
 }
 
@@ -110,7 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
