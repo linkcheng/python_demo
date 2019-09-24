@@ -9,7 +9,7 @@ class Base(models.Model):
     class Meta:
         abstract = True
 
-    id = IntegerField('主键', primary_key=True, auto_created=True)
+    id = AutoField('主键', primary_key=True)
     created_time = DateTimeField('创建时间', default=timezone.now)
     updated_time = DateTimeField('更新时间', auto_now=True)
     is_active = BooleanField('激活状态', default=False)

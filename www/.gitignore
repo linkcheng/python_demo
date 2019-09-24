@@ -1,0 +1,12 @@
+.idea/
+.vscode/
+.pid/
+venv/
+.DS_Store
+*.pyc
+*.yaml
+*.yml
+*.rdb
+*.out
+*.pkl
+*.log*

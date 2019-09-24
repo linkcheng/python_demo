@@ -2,10 +2,17 @@
 # -*- coding: UTF-8 -*-
 from django.shortcuts import render
 from django.http import HttpResponse
+import json
 
 
 def index(req):
-    return HttpResponse('hello')
+    reps = HttpResponse()
+    reps.content = json.dumps({
+        'code': '201',
+        'key': 'hello'
+    })
+
+    return reps
 
 
 def add(req):
