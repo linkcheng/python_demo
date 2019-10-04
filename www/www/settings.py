@@ -78,10 +78,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # 数据库引擎
         'NAME': 'data_pipeline',                # 要存储数据的库名，事先要创建
-        'HOST': '47.95.20.63',
+        'HOST': '127.0.0.1',
         'PORT': '3306',
-        'USER': 'admin',
-        'PASSWORD': 'admin123',
+        'USER': 'root',
+        'PASSWORD': '12345678',
     },
 }
 
@@ -123,3 +123,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# 以下不是必须的
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'common_static'),
+)

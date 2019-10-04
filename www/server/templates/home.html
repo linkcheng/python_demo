@@ -6,7 +6,9 @@
 <body>
 
 <!--<a href="/add?a=4&b=5">计算 4+5</a>-->
-
+{% load static %}
+<img src="{% static "common_static/django.png" %}"  alt="Django" />
+<br>
 <a href="{% url 'add2' 4 5 %}">计算 4+5</a>
 
 </body>
