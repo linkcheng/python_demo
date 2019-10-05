@@ -55,7 +55,7 @@ ROOT_URLCONF = 'www.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -110,13 +110,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
+# 如果 USE_TZ 设置为 True ，Django会使用系统默认设置的时区, TIME_ZONE 会无效
+USE_TZ = False
+
 TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
 USE_L10N = True
-
-USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -126,5 +127,5 @@ STATIC_URL = '/static/'
 
 # 以下不是必须的
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'common_static'),
+    os.path.join(BASE_DIR, 'static'),
 )

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+
+    <script src="/static/jquery-3.4.1.js"></script>
+    <script type="text/javascript" src="/static/jquery-ui.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/jquery-ui.css">
+    <script>
+        function show_reg() {
+            $( "#register_dia" ).dialog();
+        }
+
+        function register() {
+            $.ajax({
+                'url': '/easily_register/',
+                'type': 'POST',
+                'data': {
+                    'username': $('#id_username').val(),
+                    'password': $('#id_password').val(),
+                    'mobile': $('#id_mobile').val(),
+                },
+                'success': function (data) {
+                    console.log(data)
+                    if(data == 'ok'){
+                        location.href = '/login'
+                    } else {
+                        alert(data)
+                    }
+
+                },
+            })
+        }
+    </script>
+</head>
+<body>
+
+    <form method="post" action="/login">
+        <p>用户名：<input type="text" name="username"></p>
+        <p>密　码：<input type="password" name="password"></p>
+        <p>
+            <input type="submit" value="登录" />
+            <a href="/register/"> 注册 </a>
+            <input type="button" value="快速注册" onclick="show_reg()"/>
+        </p>
+    </form>
+
+    <div id="register_dia" style="display: none;">
+        <p>用户名：<input type="text" id="id_username" name="username"></p>
+        <p>密　码：<input type="password" id="id_password" name="password"></p>
+        <p>手机号：<input type="text" id="id_mobile" name="mobile"></p>
+        <p><input type="button" value="注册" onclick="register()"/></p>
+    </div>
+
+</body>
+
+</html>

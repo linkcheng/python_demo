@@ -25,4 +25,6 @@ urlpatterns = [
     path('add2/<int:a>/<int:b>', views.add2, name='add2'),
     path('home', views.home, name='home'),
     path('login', views.login, name='login'),
+    path('register/', views.register, name='register'),
+    path('easily_register/', views.easily_register, name='easily_register'),
 ]
