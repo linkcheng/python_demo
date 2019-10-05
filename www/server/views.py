@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
+import json
+
 from django.shortcuts import render
 from django.http import HttpResponse
-import json
+from server.models import User
 
 
 def index(req):
@@ -29,3 +31,17 @@ def add2(req, a, b):
 
 def home(req):
     return render(req, 'home.html')
+
+
+def login(request):
+    if request.method == 'GET':
+        return render(request, 'login.html')
+    elif request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = User.get_user(username, password)
+        if user:
+            return render(request, 'home.html')
+        else:
+            return HttpResponse('用户名或密码错误')
