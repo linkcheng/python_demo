@@ -136,3 +136,56 @@ def f5():
     # ax2.set_title('origin')
     #
     # plt.show()
+
+
+def f6():
+    import numpy as np
+    import pandas as pd
+
+    data = {
+        'Team': [
+            'Riders', 'Riders', 'Devils', 'Devils', 'Kings',
+            'kings', 'Kings', 'Kings', 'Riders', 'Royals', 'Royals',
+            'Riders'
+        ],
+        'Rank': [1, 2, 2, 3, 3, 4, 1, 1, 2, 4, 1, 2],
+        'Year': [
+            2014, 2015, 2014, 2015, 2014, 2015, 2016, 2017, 2016, 2014,
+            2015, 2017
+        ],
+        'Points': [876, 789, 863, 673, 741, 812, 756, 788, 694, 701, 804, 690]
+    }
+
+    df = pd.DataFrame(data)
+
+    grouped = df.groupby('Year')
+    for name, group in grouped:
+        print(name)
+        print(group)
+
+    d = df.groupby('Team')
+    score = lambda x: (x - x.mean()) / x.std() * 10
+    d.transform(score)
+
+
+def f7():
+    import pandas as pd
+    import numpy as np
+
+    df = pd.DataFrame(np.random.randint(6, size=(6, 4)),
+                      index=pd.date_range('2019-01-01', periods=6),
+                      columns=['A', 'B', 'C', 'D'])
+
+    print(df)
+    print("=======================================")
+    # r = df.rolling(window=3, min_periods=3)
+    r = df.rolling(window=3)
+    print(r)
+    r.aggregate(np.mean)
+
+    # e = df.expanding(min_periods=3)
+    e = df.expanding(3)
+    print(e)
+    e.aggregate(np.mean)
+
+    print(df.ewm(com=0.5).mean())

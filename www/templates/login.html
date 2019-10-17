@@ -22,8 +22,8 @@
                     'mobile': $('#id_mobile').val(),
                 },
                 'success': function (data) {
-                    console.log(data)
-                    if(data == 'ok'){
+                    console.log(data);
+                    if(data === 'ok'){
                         location.href = '/login'
                     } else {
                         alert(data)
