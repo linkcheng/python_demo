@@ -4,7 +4,7 @@ Flask==1.0.2
 pandas==0.22.0
 numpy==1.14.1
 PyMySQL==0.8.0
-Werkzeug==0.11.11
+Werkzeug==0.15.3
 requests==2.20.0
 peewee==2.10.2
 redis==2.10.6
