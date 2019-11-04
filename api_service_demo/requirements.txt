@@ -5,13 +5,13 @@ pandas==0.22.0
 numpy==1.14.1
 PyMySQL==0.8.0
 Werkzeug==0.11.11
-requests==2.18.4
+requests==2.20.0
 peewee==2.10.2
 redis==2.10.6
 Flask_Script==2.0.6
 DBUtils==1.2
 python_dateutil==2.7.0
-PyYAML==3.12
+PyYAML==5.1
 xlrd>=0.9.0
 xlsxwriter==1.0.2
 gunicorn==19.7.1

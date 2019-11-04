@@ -2,8 +2,7 @@
 # -*- coding: UTF-8 -*-
 """
 @author: Link 
-@contact: zheng.long@shoufuyou.com
-@module: algorithm_demo 
+@module: algorithm_demo
 @date: 2019-11-03 
 """
 import time
