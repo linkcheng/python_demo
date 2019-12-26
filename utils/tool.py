@@ -51,7 +51,7 @@ def fmt_replace_sql(table, columns):
     :param columns: 列 [col1, col2]
     :return:
     """
-    return 'REPLACE INTO shoufuyou_bi.{0} ({1}) VALUES ({2})'.\
+    return 'REPLACE INTO sfy_bi.{0} ({1}) VALUES ({2})'.\
         format(table, ','.join(['`' + col + '`' for col in columns]), ','.join(['%s']*len(columns)))
 
 

@@ -80,7 +80,7 @@ def read_att_content(msg, att_path, index):
 
 
 if __name__ == '__main__':
-    fromaddr = '*******@shoufuyou.com'
+    fromaddr = '*******@sfy.com'
     toaddrs = ['*******@qq.com']
     subject = u'测试邮件'
     password = '*******'

@@ -37,14 +37,14 @@ def get_location_address(*args):
 
 @cache(id_number_address_cache)
 def get_id_number_address_str(cursor, code):
-    sql = """SELECT province, city, district FROM shoufuyou_sam.idnumber_city WHERE code={}""".format(code)
+    sql = """SELECT province, city, district FROM sfy_sam.idnumber_city WHERE code={}""".format(code)
     return __get_param(cursor, sql)
 
 
 @cache(mobile_address_cache)
 def get_mobile_address_str(cursor, code):
-    sql = """SELECT province, city, corporation FROM shoufuyou_sam.PhoneCity WHERE code='{}'""".format(code)
-    # sql = """SELECT province, city, corporation FROM shoufuyou_sam.phone_city WHERE code='{}'""".format(code)
+    sql = """SELECT province, city, corporation FROM sfy_sam.PhoneCity WHERE code='{}'""".format(code)
+    # sql = """SELECT province, city, corporation FROM sfy_sam.phone_city WHERE code='{}'""".format(code)
     return __get_param(cursor, sql)
 
 
@@ -53,9 +53,9 @@ def get_location_address_str(cursor, code):
     province = code[:2]
     city = code[2:4]
     country = code[4:6]
-    sql = """select name from shoufuyou_v2.ChineseDistrict where provice='{0}' and city='{1}' and county='{2}'
-    union select name from shoufuyou_v2.ChineseDistrict where provice='{0}' and city='{1}' and county='00'
-    union select name from shoufuyou_v2.ChineseDistrict where provice='{0}' and city='00' and county='00'
+    sql = """select name from sfy_v2.ChineseDistrict where provice='{0}' and city='{1}' and county='{2}'
+    union select name from sfy_v2.ChineseDistrict where provice='{0}' and city='{1}' and county='00'
+    union select name from sfy_v2.ChineseDistrict where provice='{0}' and city='00' and county='00'
     """.format(province, city, country)
 
     cursor.execute(sql)
@@ -75,7 +75,7 @@ def get_HangjuHkxwParam(*args):
 @cache(HangjuXfnlParam_cache)
 def get_HangjuXfnlParam_str(cursor, score):
     sql = """select frequency_lower, frequency_upper, discount_rate_lower, discount_rate_upper, amount_lower, amount_upper 
-        from shoufuyou_risk.HangjuXfnlParam where score={}""".format(score)
+        from sfy_risk.HangjuXfnlParam where score={}""".format(score)
 
     return __get_param(cursor, sql)
 
@@ -83,7 +83,7 @@ def get_HangjuXfnlParam_str(cursor, score):
 @cache(HangjuHkxwParam_cache)
 def get_HangjuHkxwParam_str(cursor, score):
     sql = """select cabin_lower, cabin_upper, mileage_lower, mileage_upper
-        from shoufuyou_risk.HangjuHkxwParam where score={}""".format(score)
+        from sfy_risk.HangjuHkxwParam where score={}""".format(score)
 
     return __get_param(cursor, sql)
 
@@ -165,8 +165,8 @@ def send_notification_mail(content, subject=u'Notification', att_path=None):
     if os_env == 'debug':
         return
 
-    from_add = 'data.admin@shoufuyou.com'
-    to_addrs = ['zheng.long@shoufuyou.com']
+    from_add = 'data.admin@sfy.com'
+    to_addrs = ['zheng.long@sfy.com']
     password = '1A2b3cAdmin'
 
     att_path = att_path if att_path else []
@@ -190,7 +190,7 @@ def create_transfer_log(des_cr, from_table, to_table, from_rows, to_rows, count_
     if from_rows <= 0:
         return
 
-    record_sql = """INSERT INTO shoufuyou_bi.TransferLog 
+    record_sql = """INSERT INTO sfy_bi.TransferLog 
                     (from_table, to_table, from_count, to_count, count_time) VALUES (%s, %s, %s, %s, %s);"""
     des_cr.execute(record_sql, (from_table, to_table, from_rows, to_rows, count_time))
 

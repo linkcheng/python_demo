@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 """
 @author: Link 
-@contact: zheng.long@shoufuyou.com
+@contact: zheng.long@sfy.com
 @module: mysql_demo 
 @date: 2019-05-20
 @note:
@@ -25,8 +25,8 @@ HOSTS = "hh001:9092,hh002:9092,hh003:9092"
 ZK_HOSTS = 'hh001:2181,hh002:2181,hh003:2181'
 
 IP = '127.0.0.1'
-# DB = 'shoufuyou_v2'
-DB = 'shoufuyou_statistics'
+# DB = 'sfy_v2'
+DB = 'sfy_statistics'
 
 DB_DEFAULT_CONFIG = {
     'host': IP,
@@ -39,9 +39,9 @@ DB_DEFAULT_CONFIG = {
 }
 
 CONFIG = {
-    'shoufuyou_v2': DB_DEFAULT_CONFIG,
-    'shoufuyou_statistics': DB_DEFAULT_CONFIG,
-    'xinyongfei_cs': DB_DEFAULT_CONFIG,
+    'v2': DB_DEFAULT_CONFIG,
+    'statistics': DB_DEFAULT_CONFIG,
+    'cs': DB_DEFAULT_CONFIG,
 }
 
 
@@ -111,7 +111,7 @@ class KafkaReader(Reader):
         print('start read')
         message = None
 
-        # v1 = b"{'database': 'shoufuyou_v2', 'table': 'User', 'type': 'bootstrap-insert', 'ts': 15583311111, 'data': {'id': 1, 'mobile': '15868112222', 'created_time': '2019-05-18 17:59:59', 'gender': 'other', 'utm_source': '\xe5\xb0\x8f\xe7\x99\xbd\xe4\xbf\xa1\xe7\x94\xa8\xe5\x88\x86', 'updated_time': '2019-05-18 17:59:59', 'app_source': ''}}"
+        # v1 = b"{'database': 'sfy_v2', 'table': 'User', 'type': 'bootstrap-insert', 'ts': 15583311111, 'data': {'id': 1, 'mobile': '15868112222', 'created_time': '2019-05-18 17:59:59', 'gender': 'other', 'utm_source': '\xe5\xb0\x8f\xe7\x99\xbd\xe4\xbf\xa1\xe7\x94\xa8\xe5\x88\x86', 'updated_time': '2019-05-18 17:59:59', 'app_source': ''}}"
         #
         # msg1 = Message(1, v1)
         # self.notify(msg1)
@@ -225,7 +225,7 @@ class SQLBuilder:
         :param datas:
         [
             {
-                "database": "xinyongfei_cs",
+                "database": "cs",
                 "table": "StarUser",
                 "type": "update",
                 "ts": 1559206362,
@@ -404,8 +404,8 @@ class Message:
 
 
 if __name__ == '__main__':
-    d, t = 'shoufuyou_statistics', 'StarUser'
-    kafka = KafkaReader(HOSTS, 'ns_alluser_xinyongfei_cs_StarUser')
+    d, t = 'statistics', 'StarUser'
+    kafka = KafkaReader(HOSTS, 'ns_alluser_cs_StarUser')
     cols = ['mobile', 'created_time', 'gender', 'utm_source', 'updated_time', 'app_source']
     consumer = Consumer(d, t, cols, 'ignore', cols)
     kafka.attach(consumer)
@@ -415,7 +415,7 @@ if __name__ == '__main__':
     consumer.run()
 
     # v1 = {
-    #     "database": "shoufuyou_v2",
+    #     "database": "sfy_v2",
     #     "table": "User",
     #     "type": "bootstrap-insert",
     #     "ts": 15583311111,
@@ -432,7 +432,7 @@ if __name__ == '__main__':
     # }
     # msg1 = Message(1, v1)
     # v2 = {
-    #     "database": "shoufuyou_v2",
+    #     "database": "sfy_v2",
     #     "table": "User",
     #     "type": "bootstrap-insert",
     #     "ts": 1558332314,
@@ -466,7 +466,7 @@ if __name__ == '__main__':
     #
     # # time.sleep(15)
     #
-    # sql = """insert into `shoufuyou_statistics`.`StarUser`
+    # sql = """insert into `sfy_statistics`.`StarUser`
     # (mobile,created_time,gender,utm_source,updated_time,app_source)
     # values (%s,%s,%s,%s,%s,%s);"""
     # args = (

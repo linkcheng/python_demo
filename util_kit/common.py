@@ -82,8 +82,8 @@ def send_notification_mail(content, subject=u'Notification', att_path=None):
     :param att_path: 邮件附件列表，list
     :return:
     """
-    from_add = 'data.admin@shoufuyou.com'
-    to_addrs = ['zheng.long@shoufuyou.com']
+    from_add = 'data.admin@sfy.com'
+    to_addrs = ['zheng.long@sfy.com']
     password = '1A2b3cAdmin'
 
     send_mail(subject, content, to_addrs, from_add, password, att_path)
@@ -105,7 +105,7 @@ def create_transfer_log(des_cr, from_table, to_table, from_rows, to_rows, count_
     if from_rows <= 0:
         return
 
-    record_sql = """INSERT INTO shoufuyou_bi.TransferLog 
+    record_sql = """INSERT INTO sfy_bi.TransferLog 
                     (from_table, to_table, from_count, to_count, count_time) VALUES (%s, %s, %s, %s, %s);"""
     des_cr.execute(record_sql, (from_table, to_table, from_rows, to_rows, count_time))
 

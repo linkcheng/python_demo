@@ -15,6 +15,13 @@ class ListNode:
         self.next = None
 
 
+class RandomListNode:
+    def __init__(self, data):
+        self.val = data
+        self.next = None
+        self.random = None
+
+
 class Solution:
 
     def find_kth_to_tail(self, head, k):
@@ -155,6 +162,158 @@ class Solution:
             ptr = ptr.next
         print('####')
 
+    def clone(self, head):
+        """复制复杂链表
+        所谓复杂链表就是，除了自己的值以及next指针外，还有一个random指针，指向链表中任意的节点
+        """
+        if not head:
+            return None
+
+        # 在原来链表的每一个节点后都复制一个节点，并保证 next 指向像一个节点
+        ptr = head
+        while ptr:
+            new_node = RandomListNode(ptr.val)
+            new_node.next = ptr.next
+            ptr.next = new_node
+            ptr = ptr.next.next
+
+        # 假设 a' = a.next，即表示上一次循环新生成的 node
+        # 则 a'.random.val == a.random.next.val
+        ptr = head
+        while ptr:
+            ptr.next.random = ptr.random.next
+            ptr = ptr.next.next
+
+        # 断开原来的 node 与新生成 node 之间的链接
+        ptr = head
+        new_head = ptr.next
+        new_ptr = new_head
+
+        ptr.next = new_ptr.next
+        ptr = ptr.next
+        while ptr:
+            ptr.next = ptr.next.next
+            new_ptr.next = new_ptr.next.next
+            ptr = ptr.next
+
+        return new_head
+
+    def test_clone(self, length):
+        head = RandomListNode(1)
+        ptr = head
+        for i in range(2, length):
+            ptr.next = RandomListNode(i)
+            ptr = ptr.next
+
+        ptr = head
+        for i in range(1, length-2):
+            ptr.random = ptr.next.next
+            ptr = ptr.next
+        ptr.random = head
+        ptr.next.random = head.next
+
+        ptr = head
+        for i in range(length-1):
+            print(ptr.val)
+            print(ptr.random.val)
+            print('======')
+            ptr = ptr.next
+        print('#####')
+        new_head = self.clone(head)
+
+        ptr = head
+        new_ptr = new_head
+        for i in range(length-1):
+            print(ptr.val)
+            print(new_ptr.val)
+            print(ptr.random.val)
+            print(new_ptr.random.val)
+            print('======')
+            ptr = ptr.next
+            new_ptr = new_ptr.next
+
+    def find_first_common_node(self, head1, head2):
+        """寻找两个链表的相交节点"""
+        ptr1 = head1
+        ptr2 = head2
+
+        # 先确定两个链表的长度差 k，与 find_kth_to_tail 类似
+        while ptr1 and ptr2:
+            # 特殊处理相交前相等的情况
+            if ptr1 == ptr2:
+                return ptr1
+            ptr1 = ptr1.next
+            ptr2 = ptr2.next
+
+        tmp_ptr = ptr1 if ptr1 else ptr2
+        k = 0
+        while tmp_ptr:
+            k += 1
+            tmp_ptr = tmp_ptr.next
+
+        # 让长的链表的从第 k 个节点开始与短链表一一比较，知道遇到相等的为止
+        ptr1 = head1
+        ptr2 = head2
+        if ptr1:
+            for i in range(k):
+                ptr1 = ptr1.next
+        else:
+            for i in range(k):
+                ptr2 = ptr2.next
+
+        while ptr1 != ptr2:
+            ptr1 = ptr1.next
+            ptr2 = ptr2.next
+
+        return ptr1
+
+    def test_find_first_common_node(self, common_val):
+        common_head = ListNode(common_val)
+        ptr = common_head
+        for i in range(1, 3):
+            node = ListNode(common_val+i)
+            ptr.next = node
+            ptr = node
+
+        ptr = common_head
+        while ptr:
+            print(ptr.val)
+            ptr = ptr.next
+        print('====')
+
+        head1 = ListNode(1)
+        ptr = head1
+        for i in range(2, common_val):
+            node = ListNode(i)
+            ptr.next = node
+            ptr = node
+        ptr.next = common_head
+
+        ptr = head1
+        while ptr:
+            print(ptr.val)
+            ptr = ptr.next
+        print('====')
+
+        head2 = ListNode(3)
+        ptr = head2
+        for i in range(4, common_val):
+            node = ListNode(i)
+            ptr.next = node
+            ptr = node
+        ptr.next = common_head
+
+        ptr = head2
+        while ptr:
+            print(ptr.val)
+            ptr = ptr.next
+        print('====')
+
+        ret = self.find_first_common_node(head1, head2)
+
+        print(ret.val if ret else ret)
+        print('####')
+
 
 if __name__ == '__main__':
     sol = Solution()
@@ -179,7 +338,18 @@ if __name__ == '__main__':
     # sol.test_reverse_linked_list(4)
     # sol.test_reverse_linked_list(5)
 
-    sol.test_merge(5)
-    sol.test_merge(6)
-    sol.test_merge(7)
-    sol.test_merge(8)
+    # sol.test_merge(5)
+    # sol.test_merge(6)
+    # sol.test_merge(7)
+    # sol.test_merge(8)
+
+    # sol.test_clone(5)
+
+    # sol.test_find_first_common_node(4)
+    # sol.test_find_first_common_node(5)
+    # sol.test_find_first_common_node(6)
+    # sol.test_find_first_common_node(7)
+
+
+import tushare
+

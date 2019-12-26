@@ -7,7 +7,7 @@ from settings import system_config
 from cache.base import Cache
 
 REDIS_CONFIG = system_config.get('REDIS_CONFIG')
-SHOUFUYOU_RISK_CONFIG = system_config.get('SHOUFUYOU_RISK_CONFIG')
+sfy_RISK_CONFIG = system_config.get('sfy_RISK_CONFIG')
 
 
 class HangjuXfnlParamCache(object):
@@ -22,11 +22,11 @@ class HangjuXfnlParamCache(object):
         初始化缓存，
         :return:
         """
-        db = DBHelper(DictCursor, **SHOUFUYOU_RISK_CONFIG)
+        db = DBHelper(DictCursor, **sfy_RISK_CONFIG)
         cursor = db.cr
 
         sql = """SELECT score, frequency_lower, frequency_upper, discount_rate_lower, 
-            discount_rate_upper, amount_lower, amount_upper FROM shoufuyou_risk.HangjuXfnlParam"""
+            discount_rate_upper, amount_lower, amount_upper FROM sfy_risk.HangjuXfnlParam"""
         cursor.execute(sql)
         values = cursor.fetchall() or []
 
@@ -48,7 +48,7 @@ class LocationCache(object):
         初始化缓存，
         :return:
         """
-        db = DBHelper(DictCursor, **SHOUFUYOU_RISK_CONFIG)
+        db = DBHelper(DictCursor, **sfy_RISK_CONFIG)
         cursor = db.cr
 
         limit = 3000
@@ -56,7 +56,7 @@ class LocationCache(object):
 
         while 1:
             sql = """SELECT code, province, city, corporation, area_code, zip_code
-                FROM shoufuyou_risk.PhoneCity limit %s offset %s"""
+                FROM sfy_risk.PhoneCity limit %s offset %s"""
             result = cursor.execute(sql, (limit, offset))
             values = cursor.fetchall() or []
 

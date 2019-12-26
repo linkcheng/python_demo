@@ -53,7 +53,7 @@ class Solution:
         for i in range(n):
             s1 = s.replace(' ', '%20')
         t2 = time.time()
-        print(t2-t1)
+        print(t2 - t1)
 
         t1 = time.time()
         for i in range(n):
@@ -111,48 +111,162 @@ class Solution:
         while not q.is_empty():
             print(q.pop())
 
-    def binary_search(self, array, target):
-        """二分查找
+    def binary_search(self, arr, key):
+        """二分查找 key 的位置
         head = 0
         tail = len(array) - 1
         # >> 1 == //2
         pivot = (head + tail) >> 1
-
-        while (pivot > head) and (pivot < tail):
-            if array[pivot] == target:
-                return pivot
-            elif array[pivot] < target:
-                head = pivot
-                pivot = (head + tail) >> 1
-            else:
-                tail = pivot
-                pivot = (head + tail) >> 1
-
-        if array[0] == target:
-            return 0
-        elif array[-1] == target:
-            return len(array) - 1
-        else:
-            return -1
-
         """
-        head = 0
-        tail = len(array) - 1
+        left = 0
+        right = len(arr) - 1
 
-        while head <= tail:
-            pivot = (head + tail) >> 1
-            if array[pivot] == target:
-                return pivot
-            elif array[pivot] < target:
-                head = pivot + 1
+        while left <= right:
+            mid = (left + right) >> 1
+            if arr[mid] == key:
+                return mid
+            elif arr[mid] > key:
+                right = mid - 1
             else:
-                tail = pivot - 1
+                left = mid + 1
 
         return -1
 
-    def test_binary_search(self, target):
-        arr = [2, 3, 4, 5, 6, 7]
-        print(self.binary_search(arr, target))
+    def test_binary_search(self, key):
+        arr = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+        x = self.binary_search(arr, key)
+        print(f'binary_search = {x}')
+
+    def binary_search_first_equal(self, arr, key):
+        """第一个 == key 的位置"""
+        length = len(arr)
+        left = 0
+        right = length - 1
+
+        while left <= right:
+            mid = (left + right) >> 1
+            if arr[mid] >= key:
+                right = mid - 1
+            else:
+                left = mid + 1
+
+        if left < length and arr[left] == key:
+            return left
+        else:
+            return -1
+
+    def test_binary_search_first_equal(self, key):
+        arr = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+        x = sol.binary_search_first_equal(arr, key)
+        print(f'first_equal = {x}')
+
+    def binary_search_last_equal(self, arr, key):
+        """最后一个 == key 的位置"""
+        left = 0
+        right = len(arr) - 1
+        while left <= right:
+            mid = (left + right) >> 1
+            if arr[mid] <= key:
+                left = mid + 1
+            else:
+                right = mid - 1
+
+        if right >= 0 and arr[right] == key:
+            return right
+        else:
+            return -1
+
+    def test_binary_search_last_equal(self, key):
+        arr = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+        x = sol.binary_search_last_equal(arr, key)
+        print(f'last_equal = {x}')
+
+    def binary_search_first_greater(self, arr, key):
+        """第一个 > key 的位置"""
+        left = 0
+        right = len(arr) - 1
+
+        while left <= right:
+            mid = left + ((right - left) >> 1)
+            if arr[mid] <= key:
+                left = mid + 1
+            else:
+                right = mid - 1
+        if left >= len(arr):
+            return -1
+        return left
+
+    def test_binary_search_first_greater(self, key):
+        a = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+        x = self.binary_search_first_greater(a, key)
+        print(f'first_greater = {x}')
+
+    def binary_search_first_ge(self, arr, key):
+        """
+        第一个 >= key 的位置
+        [2,4,6,8,10], 3->4
+        """
+        left = 0
+        right = len(arr) - 1
+
+        while left <= right:
+            mid = (left + right) >> 1
+            if arr[mid] >= key:
+                right = mid - 1
+            else:
+                left = mid + 1
+        if left >= len(arr):
+            return -1
+        else:
+            return left
+
+    def test_binary_search_first_ge(self, key):
+        a = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+        x = self.binary_search_first_ge(a, key)
+        print(f'first_ge = {x}')
+
+    def binary_search_last_less(self, arr, key):
+        """最后一个 < key 的元素的位置"""
+        left = 0
+        right = len(arr) - 1
+
+        while left <= right:
+            mid = left + ((right - left) >> 1)
+            if arr[mid] >= key:
+                right = mid - 1
+            else:
+                left = mid + 1
+        if right < 0:
+            return -1
+        else:
+            return right
+
+    def test_binary_search_last_less(self, key):
+        a = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+        x = self.binary_search_last_less(a, key)
+        print(f'last_less = {x}')
+
+    def binary_search_last_le(self, arr, key):
+        """最后一个 <= key 的元素的位置"""
+        left = 0
+        right = len(arr) - 1
+
+        while left <= right:
+            mid = left + ((right-left) >> 1)
+            if arr[mid] <= key:
+                left = mid + 1
+            else:
+                right = mid - 1
+
+        if right < 0:
+            return -1
+        else:
+            return right
+
+    def test_binary_search_last_le(self, key):
+        a = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+        x = self.binary_search_last_le(a, key)
+        print(f'last_le = {x}')
 
     def bubble_sort(self, array):
         """冒泡排序"""
@@ -160,7 +274,7 @@ class Solution:
         # print('=======')
         length = len(array)
         for i in range(length):
-            for j in range(i+1, length):
+            for j in range(i + 1, length):
                 # if array[i] > array[j]:
                 if array[i] < array[j]:
                     array[i], array[j] = array[j], array[i]
@@ -182,7 +296,7 @@ class Solution:
         # print('=======')
         for i in range(length):
             k = i
-            for j in range(i+1, length):
+            for j in range(i + 1, length):
                 if array[k] < array[j]:
                     k = j
             if k != i:
@@ -194,6 +308,65 @@ class Solution:
     def test_select_sort(self, a):
         # a = [1, 2, 3, 4, 5, 6]
         self.select_sort(a)
+
+    def merge_sort(self, arr, left, right):
+        if left == right:
+            # print(f"base={arr[left]}")
+            # print("$$$$")
+            return arr[left]
+
+        # print(f"left={left}")
+        # print(f"right={right}")
+        mid = left + ((right - left) >> 1)
+        # print(f"mid={mid}")
+        # print(f"#####")
+
+        # print('sort left')
+        self.merge_sort(arr, left, mid)
+        # print('sort right')
+        self.merge_sort(arr, mid + 1, right)
+        # print('merge')
+        self.merge(arr, left, mid, right)
+
+    def merge(self, arr, left, mid, right):
+        tmp = [None] * (right - left + 1)
+        p1 = left
+        p2 = mid + 1
+        i = 0
+
+        # 遍历两个交叉部分
+        while p1 <= mid and p2 <= right:
+            if arr[p1] < arr[p2]:
+                tmp[i] = arr[p1]
+                p1 += 1
+                i += 1
+            else:
+                tmp[i] = arr[p2]
+                p2 += 1
+                i += 1
+
+        # 交叉部分合并完后，把剩余部分直接追加到尾部
+        while p1 <= mid:
+            tmp[i] = arr[p1]
+            p1 += 1
+            i += 1
+        while p2 <= right:
+            tmp[i] = arr[p2]
+            p2 += 1
+            i += 1
+        # print(f"left={left}")
+        # print(f"right={right}")
+        # print(f"origin={arr[left: right+1]}")
+        # print(f"sorted={tmp}")
+        # print("=======")
+
+        # 把临时数据替换到原来的位置
+        for i, v in enumerate(tmp):
+            arr[left + i] = v
+
+    def test_merge_sort(self, a):
+        # a = [1, 2, 3, 4, 5, 6]
+        self.merge_sort(a, 0, len(a) - 1)
 
     def quick_sort(self, array):
         """快排"""
@@ -215,6 +388,7 @@ class Solution:
 
     def min_stack(self):
         """包含min函数的栈"""
+
         class Stack:
             def __init__(self):
                 self.a = []
@@ -263,6 +437,7 @@ class Solution:
         判断是否需要弹出的时机：压入后就判断
         判断需要弹出的条件：压入栈的顶部跟跟出栈序列的顶部数据相等
         """
+
         class Stack:
             def __init__(self):
                 self.a = []
@@ -310,34 +485,59 @@ def compare_sort():
     so = Solution()
     now = time.time
     n = 10
-    arr = [4, 1, 7, 2, 2, 7, 5, 9, 6, 3]
-    arr1 = [random.randint(1, 1000) for _ in range(200)]
+    # arr = [4, 1, 7, 2, 2, 7, 5, 9, 6, 3]
+    arr = [random.randint(1, 1000) for _ in range(100)]
+    arr1 = [arr for _ in range(n)]
     arr2 = arr1.copy()
     arr3 = arr1.copy()
+    arr4 = arr1.copy()
 
     print(arr1)
 
     t1 = now()
-    for _i in range(n):
-        so.test_bubble_sort(arr1)
+    for a1 in arr1:
+        so.test_bubble_sort(a1)
+        print(a1)
     t2 = now()
-    print(t2-t1)
-    print(arr1)
+    print(t2 - t1)
 
     t3 = now()
-    for _i in range(n):
-        so.test_select_sort(arr2)
+    for a2 in arr2:
+        so.test_select_sort(a2)
+        print(a2)
     t4 = now()
     print(t4 - t3)
-    print(arr2)
 
     r = None
     t5 = now()
-    for _i in range(n):
-        r = so.test_quick_sort(arr3)
+    for a3 in arr3:
+        r = so.test_quick_sort(a3)
+        print(r)
     t6 = now()
     print(t6 - t5)
-    print(r)
+
+    t7 = now()
+    for a4 in arr4:
+        so.test_merge_sort(a4)
+        print(a4)
+    t8 = now()
+    print(t8 - t7)
+
+
+def binary_search_test():
+    so = Solution()
+
+    a = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
+    print(f'arr = {a}')
+    so.test_binary_search(5)
+    so.test_binary_search_first_equal(5)
+    so.test_binary_search_last_equal(5)
+
+    so.test_binary_search_first_ge(5)
+    so.test_binary_search_first_greater(5)
+
+    so.test_binary_search_last_le(5)
+    so.test_binary_search_last_less(5)
 
 
 if __name__ == '__main__':
@@ -347,5 +547,11 @@ if __name__ == '__main__':
     # sol.test_queue()
     # for _i in range(10):
     #     sol.test_binary_search(_i)
-    sol.test_is_pop_order()
+    # sol.test_is_pop_order()
+    # compare_sort()
+
+    binary_search_test()
+
+
+import heapq
 
