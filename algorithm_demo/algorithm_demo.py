@@ -9,6 +9,10 @@ import time
 import random
 
 
+def swap( array, start, end):
+    array[start], array[end] = array[end], array[start]
+
+
 class Solution:
     def find(self, target, array):
         """有序矩阵寻找数字
@@ -309,6 +313,52 @@ class Solution:
         # a = [1, 2, 3, 4, 5, 6]
         self.select_sort(a)
 
+    def merge_sort1(self, arr):
+        if not arr:
+            return
+        self._merge_sort1(arr, 0, len(arr)-1)
+
+    def _merge_sort1(self, arr, left, right):
+        if left == right:
+            return
+        mid = (left+right) >> 1
+        self._merge_sort1(arr, left, mid)
+        self._merge_sort1(arr, mid+1, right)
+        self._merge1(arr, left, mid, right)
+
+    def _merge1(self, arr, left, mid, right):
+        """
+        合并数组的有序的两部分，left~mid 与 mid+1~right，使得最后的数组依然保持有序
+        :param arr:
+        :param left:
+        :param mid:
+        :param right:
+        :return:
+        """
+        tmp = [None] * (right-left+1)
+        tmp_index = 0
+        p1 = left
+        p2 = right
+
+        while p1 <= mid and p2 <= right:
+            tmp[tmp_index] = min(arr[p1], arr[p2])
+            tmp_index += 1
+            if arr[p1] < arr[p2]:
+                p1 += 1
+            else:
+                p2 += 1
+
+        while p1 <= mid:
+            tmp[tmp_index] = arr[p1]
+            p1 += 1
+
+        while p2 <= right:
+            tmp[tmp_index] = arr[p2]
+            p2 += 1
+
+        for i, v in enumerate(tmp):
+            arr[left+i] = v
+
     def merge_sort(self, arr, left, right):
         if left >= right:
             # print(f"base={arr[left]}")
@@ -368,6 +418,51 @@ class Solution:
         # a = [1, 2, 3, 4, 5, 6]
         self.merge_sort(a, 0, len(a) - 1)
 
+    def quick_sort1(self, arr):
+        if not arr or len(arr) < 2:
+            return arr
+        self._quick_sort1(arr, 0, len(arr)-1)
+
+    def _quick_sort1(self, arr, left, right):
+        if left < right:
+            # 基于随机的选择一个值放在最后
+            swap(arr, random.randint(left, right-1), right)
+            l, r = self._partition1(arr, left, right)
+            self._quick_sort1(arr, left, l-1)
+            self._quick_sort1(arr, r+1, right)
+
+    def _partition1(self, arr, left, right):
+        """
+        在数组 array 上的 left~right 范围上划分数组
+        分成小于，等于，大于 arr[right] 的三部分，每一部分可以乱序
+        :param arr:
+        :param left:
+        :param right:
+        :return: (l, r) l~r范围内的数据==arr[right]
+                l 表示 == arr[right] 的左边界
+                r 表示 == arr[right] 的右边界
+        """
+        # 小于 arr[right] 的最后一个数的位置
+        less = left - 1
+        # 大于 arr[right] 的第一个数的位置，但是不包含最后一个位置的数字
+        more = right
+
+        while left < more:
+            if arr[left] < arr[right]:
+                less += 1
+                swap(arr, less, left)
+                left += 1
+            elif arr[left] > arr[right]:
+                more -= 1
+                # 当前left的位置被替换，所以不需要前进，继续判断这个位置
+                swap(arr, left, more)
+            else:
+                left += 1
+        # 最后把right的位置的数也换到相等的区域
+        swap(arr, more, right)
+
+        return less+1, more
+
     def quick_sort(self, array):
         """快排"""
         if array is None or len(array) <= 1:
@@ -402,18 +497,18 @@ class Solution:
         print(array)
         # 此时 array 第一个元素就是最大值
         length -= 1
-        self.swap(array, 0, length)
+        swap(array, 0, length)
 
         while length > 0:
             self.heapify(array, 0, length)
             length -= 1
-            self.swap(array, 0, length)
+            swap(array, 0, length)
 
     def heap_insert(self, array, index):
         """构建大根堆"""
         parent = index-1 >> 1
         while parent >= 0 and array[index] > array[parent]:
-            self.swap(array, index, parent)
+            swap(array, index, parent)
             # array[index], array[parent] = array[parent], array[index]
             index = parent
             parent = index - 1 >> 1
@@ -432,13 +527,10 @@ class Solution:
             if largest == parent:
                 break
 
-            self.swap(array, largest, parent)
+            swap(array, largest, parent)
             # array[parent], array[largest] = array[largest], array[parent]
             parent = largest
             left = (parent << 1) + 1
-
-    def swap(self, array, start, end):
-        array[start], array[end] = array[end], array[start]
 
     def test_heapify_sort(self):
         a = [3, 5, 7, 2, 9, 1, 10]
@@ -601,7 +693,11 @@ def binary_search_test():
 
 
 if __name__ == '__main__':
+    a = [random.randint(1, 100) for _ in range(10)]
+    print(a)
     sol = Solution()
+    sol.quick_sort1(a)
+    print(a)
     # sol.test_find(151)
     # sol.test_replace_space('we are happy.')
     # sol.test_queue()
@@ -695,6 +791,3 @@ a = Test()
 
 isinstance(a, MySized)  # True
 
-import sortedcontainers
-
-from pybst import RBTree
