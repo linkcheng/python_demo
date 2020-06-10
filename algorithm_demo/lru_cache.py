@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 """
-@author: Link 
-@contact: zheng.long@sfy.com
-@module: __init__.py 
-@date: 2019-07-24 
+@author: Link
+@module: lru_cache 
+@date: 2020-06-10 
 """
 
 if __name__ == '__main__':

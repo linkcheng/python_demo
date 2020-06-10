@@ -310,7 +310,7 @@ class Solution:
         self.select_sort(a)
 
     def merge_sort(self, arr, left, right):
-        if left == right:
+        if left >= right:
             # print(f"base={arr[left]}")
             # print("$$$$")
             return arr[left]
@@ -370,10 +370,11 @@ class Solution:
 
     def quick_sort(self, array):
         """快排"""
-        if len(array) <= 1:
+        if array is None or len(array) <= 1:
             return array
 
-        pivot = array[0]
+        length = len(array)
+        pivot = array[random.randint(0, length-1)]
         left = [i for i in array if i > pivot]
         right = [i for i in array if i < pivot]
         mid = [i for i in array if i == pivot]
@@ -385,6 +386,65 @@ class Solution:
         b = self.quick_sort(a)
         # print(b)
         return b
+
+    def heap_sort(self, array):
+        """
+        堆排序
+        """
+        if array is None or len(array) < 1:
+            return array
+
+        length = len(array)
+
+        # 构建一颗大根堆
+        for i in range(length):
+            self.heap_insert(array, i)
+        print(array)
+        # 此时 array 第一个元素就是最大值
+        length -= 1
+        self.swap(array, 0, length)
+
+        while length > 0:
+            self.heapify(array, 0, length)
+            length -= 1
+            self.swap(array, 0, length)
+
+    def heap_insert(self, array, index):
+        """构建大根堆"""
+        parent = index-1 >> 1
+        while parent >= 0 and array[index] > array[parent]:
+            self.swap(array, index, parent)
+            # array[index], array[parent] = array[parent], array[index]
+            index = parent
+            parent = index - 1 >> 1
+
+    def heapify(self, array, parent, size):
+        """对 array 中以 parent 为头结点的堆，在大小为 size 范围内排序"""
+        left = (parent << 1) + 1
+        while left < size:
+            right = left + 1
+            if right < size and array[right] > array[left]:
+                largest = right
+            else:
+                largest = left
+
+            largest = largest if array[largest] > array[parent] else parent
+            if largest == parent:
+                break
+
+            self.swap(array, largest, parent)
+            # array[parent], array[largest] = array[largest], array[parent]
+            parent = largest
+            left = (parent << 1) + 1
+
+    def swap(self, array, start, end):
+        array[start], array[end] = array[end], array[start]
+
+    def test_heapify_sort(self):
+        a = [3, 5, 7, 2, 9, 1, 10]
+        print(a)
+        self.heap_sort(a)
+        print(a)
 
     def min_stack(self):
         """包含min函数的栈"""
@@ -550,8 +610,91 @@ if __name__ == '__main__':
     # sol.test_is_pop_order()
     # compare_sort()
 
-    binary_search_test()
+    # binary_search_test()
+
+    sol.test_heapify_sort()
 
 
-import heapq
+class MyType(type):
+    def __new__(cls, *args, **kwargs):
+        print(f"__new__, {args, kwargs}")
+        return type.__new__(cls, *args, **kwargs)
 
+    def __init__(self, *args, **kwargs):
+        print(f"__init__, {args, kwargs}")
+
+    def __call__(cls, *args, **kwargs):
+        print(f"__call__, {args, kwargs}")
+        obj = cls.__new__(cls, *args, **kwargs)
+        obj.__init__(*args, **kwargs)
+        return obj
+
+class Foo(metaclass=MyType):
+    def __init__(self):
+        self.name = 'name'
+
+
+
+from abc import ABCMeta, abstractmethod
+
+
+def meth(self):
+    print(f"Calling method={self.attr}")
+
+
+class MyMeta(type):
+    @classmethod
+    def __prepare__(cls, name, baseClasses):
+        return {'meth': meth}
+
+    def __new__(cls, name, baseClasses, classdict):
+        return type.__new__(cls, name, baseClasses, classdict)
+
+
+def _check_methods(C, *methods):
+    print(f"_check_methods C={C}, methods={methods}")
+    mro = C.__mro__
+    print(mro)
+    for method in methods:
+        for B in mro:
+            if method in B.__dict__:
+                if B.__dict__[method] is None:
+                    return NotImplemented
+                break
+        else:
+            return NotImplemented
+    return True
+
+
+class MySized(metaclass=ABCMeta):
+    __slots__ = ()
+
+    @abstractmethod
+    def __len__(self):
+        return 0
+
+    @classmethod
+    def __subclasshook__(cls, C):
+        print(f"cls={cls}, C={C}")
+        if cls is MySized:
+            return _check_methods(C, "__len__")
+        return NotImplemented
+
+
+class Test(metaclass=MyMeta):
+    attr = 'an attribute'
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 0
+
+
+a = Test()
+
+isinstance(a, MySized)  # True
+
+import sortedcontainers
+
+from pybst import RBTree
