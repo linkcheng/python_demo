@@ -17,6 +17,29 @@ class Node:
         self.right = None
 
 
+class Stack:
+    def __init__(self, capacity=None):
+        self.capacity = capacity
+        self.data = []
+
+    def is_empty(self) -> bool:
+        return len(self.data) == 0
+
+    def push(self, val: Node) -> None:
+        if self.capacity and len(self.data) >= self.capacity:
+            raise RuntimeError('The stack is full')
+        self.data.append(val)
+
+    def pop(self) -> Node:
+        if len(self.data) <= 0:
+            raise RuntimeError('The stack is empty')
+        return self.data.pop()
+
+    def peek(self) -> Node:
+        if len(self.data) > 0:
+            return self.data[-1]
+
+
 def morris_in_order_traversal(root: Node) -> None:
     """
     * morris 中序遍历
@@ -37,16 +60,139 @@ def morris_in_order_traversal(root: Node) -> None:
             cur = cur.right
         else:
             # cur 的以中序遍历方式的前驱节点
+            # 左孩子的最右节点
             prev = cur.left
             while prev.right and prev.right != cur:
                 prev = prev.right
+
+            # prev.right is None 表示还没有走过这个节点
             if prev.right is None:
                 prev.right = cur
                 cur = cur.left
+            # prev.right is not None 表示已经走过这个节点，此次是通过这个指针返回
             else:
                 print_non(f'{cur.value} ')
                 prev.right = None
                 cur = cur.right
+    print()
+
+
+def morris_pre_order_traversal(root: Node) -> None:
+    """morris 先序遍历"""
+    cur = root
+
+    while cur:
+        if cur.left is None:
+            print_non(f'{cur.value} ')
+            cur = cur.right
+        else:
+            # cur 的以中序遍历方式的前驱节点
+            # 左孩子的最右节点
+            prev = cur.left
+            while prev.right and prev.right != cur:
+                prev = prev.right
+
+            # prev.right is None 表示还没有走过这个节点
+            if prev.right is None:
+                prev.right = cur
+                print_non(f'{cur.value} ')
+                cur = cur.left
+            # prev.right is not None 表示已经走过这个节点，此次是通过这个指针返回
+            else:
+                prev.right = None
+                cur = cur.right
+    print()
+
+
+def pre_order_traversal_rec(root: Node) -> None:
+    if not root:
+        return
+    print_non(f'{root.value} ')
+    pre_order_traversal_rec(root.left)
+    pre_order_traversal_rec(root.right)
+
+
+def in_order_traversal_rec(root: Node) -> None:
+    if not root:
+        return
+    in_order_traversal_rec(root.left)
+    print_non(f'{root.value} ')
+    in_order_traversal_rec(root.right)
+
+
+def post_order_traversal_rec(root: Node) -> None:
+    if not root:
+        return
+    post_order_traversal_rec(root.left)
+    post_order_traversal_rec(root.right)
+    print_non(f'{root.value} ')
+
+
+def layer_order_traversal(root: Node) -> None:
+    pass
+
+
+def pre_order_traversal(root: Node) -> None:
+    if not root:
+        return
+
+    stack = Stack()
+    stack.push(root)
+
+    while not stack.is_empty():
+        cur = stack.pop()
+        print_non(f'{cur.value} ')
+
+        if cur.right:
+            stack.push(cur.right)
+
+        if cur.left:
+            stack.push(cur.left)
+    print()
+
+
+def in_order_traversal(root: Node) -> None:
+    if not root:
+        return
+
+    cur = root
+    stack = Stack()
+
+    while not stack.is_empty() or cur:
+        if cur:
+            stack.push(cur)
+            cur = cur.left
+        else:
+            cur = stack.pop()
+            print_non(f'{cur.value} ')
+            cur = cur.right
+    print()
+
+
+def post_order_traversal(root: Node) -> None:
+    if not root:
+        return
+
+    stack = Stack()
+    help_stack = Stack()
+
+    stack.push(root)
+
+    while not stack.is_empty():
+        cur = stack.pop()
+        help_stack.push(cur)
+
+        if cur.left:
+            stack.push(cur.left)
+
+        if cur.right:
+            stack.push(cur.right)
+
+    while not help_stack.is_empty():
+        data = help_stack.pop()
+        print_non(f'{data.value} ')
+
+    print()
 
 
 if __name__ == '__main__':
@@ -62,57 +208,19 @@ if __name__ == '__main__':
     head.right.right.left = Node(9)
     head.right.right.right = Node(11)
 
-    # morris_in_order_traversal(head)
+    print('morris')
+    morris_pre_order_traversal(head)
+    morris_in_order_traversal(head)
 
+    print('rec')
+    pre_order_traversal_rec(head)
+    print()
+    in_order_traversal_rec(head)
+    print()
+    post_order_traversal_rec(head)
+    print()
 
-    class Field:
-        def __init__(self):
-            print(f'Field __init__')
-
-        def __get__(self, instance, owner):
-            print(f'Field __get__ {instance}, {owner}')
-            return self.value
-
-        def __set__(self, instance, value):
-            print(f'Field __set__ {instance}, {value}')
-            self.value = value
-
-        def __del__(self):
-            self.value = None
-            del self.value
-
-    class NonDataField:
-        def __init__(self):
-            print(f'Field __init__')
-
-        def __get__(self, instance, owner):
-            print(f'Field __get__ {instance}, {owner}')
-            return "NonDataField"
-
-
-    class Model:
-        age = Field()
-        non_data = NonDataField()
-
-        def __init__(self, name):
-            self.name = name
-            self.age = 1
-
-        def __getattribute__(self, item):
-            print(f'Model __getattribute__ {self} {item}')
-            return object.__getattribute__(self, item)
-
-        def __getattr__(self, item):
-            print(f'Model __getattr__ {item}')
-            return self.age
-
-    obj = Model("hello")
-    print(f'\nModel={Model}')
-    print(f'obj={obj}\n')
-    print(f'Model.__dict__ {Model.__dict__}\n')
-    print(f'obj.__dict__ {obj.__dict__}\n')
-    print(f'obj.age={obj.age}\n')
-    print(f'obj.non_data={obj.non_data}\n')
-    print(f'obj.name={obj.name}\n')
-    print(f'obj.invalid={obj.invalid}\n')
-
+    print('non-rec')
+    pre_order_traversal(head)
+    in_order_traversal(head)
+    post_order_traversal(head)
