@@ -40,6 +40,29 @@ class Stack:
             return self.data[-1]
 
 
+class Queue:
+    def __init__(self, capacity=None):
+        self.capacity = capacity
+        self.data = []
+
+    def is_empty(self) -> bool:
+        return len(self.data) == 0
+
+    def push(self, val: Node) -> None:
+        if self.capacity and len(self.data) >= self.capacity:
+            raise RuntimeError('The queue is full')
+        self.data.append(val)
+
+    def poll(self) -> Node:
+        if len(self.data) <= 0:
+            raise RuntimeError('The queue is empty')
+        return self.data.pop(0)
+
+    def peek(self) -> Node:
+        if len(self.data) > 0:
+            return self.data[0]
+
+
 def morris_in_order_traversal(root: Node) -> None:
     """
     * morris 中序遍历
@@ -128,8 +151,22 @@ def post_order_traversal_rec(root: Node) -> None:
     print_non(f'{root.value} ')
 
 
-def layer_order_traversal(root: Node) -> None:
-    pass
+def level_order_traversal(root: Node) -> None:
+    if not root:
+        return
+
+    q = Queue()
+    q.push(root)
+
+    while not q.is_empty():
+        cur = q.poll()
+        print_non(f'{cur.value} ')
+        if cur.left:
+            q.push(cur.left)
+        if cur.right:
+            q.push(cur.right)
+
+    print()
 
 
 def pre_order_traversal(root: Node) -> None:
@@ -224,3 +261,5 @@ if __name__ == '__main__':
     pre_order_traversal(head)
     in_order_traversal(head)
     post_order_traversal(head)
+
+    level_order_traversal(head)

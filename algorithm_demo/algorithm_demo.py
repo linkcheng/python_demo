@@ -465,7 +465,7 @@ class Solution:
 
     def quick_sort(self, array):
         """快排"""
-        if array is None or len(array) <= 1:
+        if array is None or len(array) < 2:
             return array
 
         length = len(array)
@@ -482,11 +482,55 @@ class Solution:
         # print(b)
         return b
 
+    def heap_sort1(self, array):
+        """堆排序"""
+        if not array or len(array) < 2:
+            return array
+
+        size = len(array)
+        # 构建大根堆
+        self._heap_sort1(array, size)
+
+        # 一次把堆顶位置的值与堆中最后一个值交换，
+        # 通过 heapify 继续保持堆结构
+        size -= 1
+        swap(array, 0, size)
+        while size > 0:
+            self._heapify(array, 0, size)
+            size -= 1
+            swap(array, 0, size)
+
+    def _heapify(self, array, root, size):
+        """保持以 root 为根节点的大根堆在 size 范围内依然是大根堆结构"""
+        left = (root << 1) + 1
+        while left < size:
+            right = left + 1
+            largest = right if right < size and array[right] > array[left] else left
+            largest = largest if array[largest] > array[root] else root
+            if largest == root:
+                break
+            swap(array, largest, root)
+            root = largest
+            left = (root << 1) + 1
+
+    def _heap_sort1(self, array, size):
+        # 根据数组 array size 范围内构建大根堆
+        for i in range(size):
+            self._heap_insert1(array, i)
+
+    def _heap_insert1(self, array, index):
+        """把 index 位置的数插入大根堆，并保持大根堆结构"""
+        parent = index - 1 >> 1
+        while parent >= 0 and array[index] > array[parent]:
+            swap(array, parent, index)
+            index = parent
+            parent = index - 1 >> 1
+
     def heap_sort(self, array):
         """
         堆排序
         """
-        if array is None or len(array) < 1:
+        if array is None or len(array) < 2:
             return array
 
         length = len(array)
