@@ -5,6 +5,7 @@
 @module: TcpClient 
 @date: 2020-06-13 
 """
+import struct
 import socket
 from socket import AF_INET, SOCK_STREAM
 
@@ -32,8 +33,10 @@ class TcpClient1:
 
     def send(self, data):
         if isinstance(data, str):
-            data = data.encode('utf8')
-        self.client_fd.send(data)
+            data = data.encode('utf-8')
+        length = len(data)
+        head = struct.pack('!I', length)
+        self.client_fd.send(head+data)
 
     def recv(self):
         data = self.client_fd.recv(BUFFER_SIZE)

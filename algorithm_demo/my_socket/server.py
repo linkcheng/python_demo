@@ -5,6 +5,7 @@
 @module: TCPServer 
 @date: 2020-06-13 
 """
+import struct
 import socket
 import selectors
 from socket import AF_INET, SOCK_STREAM
@@ -51,6 +52,10 @@ class TcpServer1:
 class Handler:
     def __init__(self, server: TcpServer1):
         self.server = server
+        self.data_buffer = bytes()
+        self.buffer_size = 4096
+        # 请求头类型为 unsigned int，大小 4 bytes
+        self.header_size = struct.calcsize('!I')
 
     def accept(self, sock) -> Socket:
         """获取客户端 socket"""
@@ -64,8 +69,25 @@ class Handler:
 
     def read(self, client_fd: Socket):
         """接收数据"""
-        data = client_fd.recv(BUFFER_SIZE)
-        return data.decode('utf8')
+        data = client_fd.recv(self.buffer_size)
+        if not data:
+            return
+
+        self.data_buffer += data
+        while len(self.data_buffer) >= self.header_size:
+            # 取包头
+            head_pack = struct.unpack('!I', self.data_buffer[:self.header_size])
+            body_size = head_pack[0]
+
+            # 处理分包
+            if len(self.data_buffer) < self.header_size + body_size:
+                break
+
+            body = self.data_buffer[self.header_size: self.header_size+body_size]
+            yield body.decode('utf8')
+
+            # 处理粘包
+            self.data_buffer = self.data_buffer[self.header_size+body_size:]
 
     def send(self, client_fd: Socket, data: Union[str, bytes]) -> None:
         """发送数据"""
@@ -89,17 +111,19 @@ class EventLoop:
         self.select = DefaultSelector()
         self.server_id = server_id
         self.handler = handler
-        self.buffer = {}
 
     def register(self, fd: Socket, events: SelectorKey, data=None):
         fd.setblocking(False)
         self.select.register(fd, events, data)
 
+    def modify(self, fd: Socket, events: SelectorKey, data=None):
+        self.select.modify(fd, events, data)
+
     def unregister(self, fd):
         self.select.unregister(fd)
 
     def run(self):
-        loop.register(self.server_id, selectors.EVENT_READ, self.accept)
+        self.register(self.server_id, selectors.EVENT_READ)
 
         while True:
             events = self.select.select()
@@ -110,23 +134,29 @@ class EventLoop:
                     else:
                         self.read(key.fileobj)
                 elif mask == EVENT_WRITE:
-                    self.write(key.fileobj)
+                    print(f"EventLoop, key={key}, data={key.data}")
+                    self.write(key.fileobj, key.data)
 
     def accept(self, sock):
         """sock 要处理的 fd, mask 为事件类型 READ or WRITE"""
         conn = self.handler.accept(sock)  # Should be ready
-        self.register(conn, EVENT_READ | EVENT_WRITE, self.read)
+        self.register(conn, EVENT_READ, self.read)
 
     def read(self, conn):
-        data = self.handler.read(conn)
-        if data and data not in ('q', 'Q'):
-            self.buffer[conn] = self.handler.handle(conn, data)
-        else:
-            self.unregister(conn)
-            self.handler.close(conn)
+        for data in self.handler.read(conn):
+            if data and data not in ('q', 'Q'):
+                resp = self.handler.handle(conn, data)
+                self.modify(conn, EVENT_WRITE, resp)
+            else:
+                self.unregister(conn)
+                self.handler.close(conn)
 
-    def write(self, conn):
-        self.handler.send(conn, self.buffer.pop(conn, None))
+    def write(self, conn, data):
+        self.handler.send(conn, data)
+        self.modify(conn, EVENT_READ)
+
+    def close(self):
+        self.select.close()
 
 
 if __name__ == '__main__':
@@ -139,5 +169,6 @@ if __name__ == '__main__':
         loop.run()
     finally:
         print('close server')
+        loop.close()
         svr.close()
 

@@ -313,6 +313,15 @@ class Solution:
         # a = [1, 2, 3, 4, 5, 6]
         self.select_sort(a)
 
+    def insert_sort(self, array):
+        if not array or len(array) < 2:
+            return
+        length = len(array)
+        for i in range(1, length):
+            for j in range(i-1, -1, -1):
+                if array[j] > array[j+1]:
+                    swap(array, j, j+1)
+
     def merge_sort1(self, arr):
         if not arr:
             return
@@ -734,6 +743,43 @@ def binary_search_test():
 
     so.test_binary_search_last_le(5)
     so.test_binary_search_last_less(5)
+
+
+def get_gap(array: list):
+    """查找数据排序后相邻数的最大差值，时间复杂度要求O(N)，不能使用基于比较的排序"""
+    if not array or len(array) < 2:
+        return 0
+
+    min_item = min(array)
+    max_item = max(array)
+
+    if min_item == max_item:
+        return 0
+
+    length = len(array)
+    has_num = [False] * (length+1)
+    mins = [None] * (length+1)
+    maxs = [None] * (length+1)
+
+    for item in array:
+        bid = bucket(item, min_item, max_item, length)
+        mins[bid] = min(mins[bid], item) if has_num[bid] else item
+        maxs[bid] = max(maxs[bid], item) if has_num[bid] else item
+        has_num[bid] = True
+
+    max_num = 0
+    last_max = maxs[0]
+
+    for i in range(1, length+1):
+        if has_num[i]:
+            max_num = max(max_num, mins[i]-last_max)
+            last_max = maxs[i]
+
+    return max_num
+
+
+def bucket(cur_num, min_num, max_num, size):
+    return (cur_num-min_num)*size//(max_num-min_num)
 
 
 if __name__ == '__main__':
