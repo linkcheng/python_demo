@@ -35,7 +35,7 @@ def get_mapper_id_str(cursor, key_value, key_type):
 
     if count == 0:
         sql = "insert into `IdMapper` (`key`, `type`, `created_time`) values (%s, %s, %s)"
-        cursor.execute(sql, (key_value, key_type, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        cursor.execute(sql, (key_value, key_type, datetime.datetime.now().strftime('%Y-%pattern-%d %H:%M:%S')))
         mapper_id = int(cursor.lastrowid)
     else:
         item = cursor.fetchone()

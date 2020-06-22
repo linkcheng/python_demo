@@ -20,7 +20,7 @@ __all__ = [
 
 IS_DEBUG = False
 
-str_fmt = '%Y-%m-%d %H:%M:%S'
+str_fmt = '%Y-%pattern-%d %H:%M:%S'
 time_start = datetime(1900, 1, 1)
 
 

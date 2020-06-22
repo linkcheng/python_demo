@@ -6,7 +6,7 @@ import re
 
 def getUrl(session, cookie):
     commit_id = '68926df060ac7cad1dfcf78c794f261ceb1effad'
-    url = 'http://igerrit/gitweb?p=Doc/17Model/17Cy/21_UI.git;a=commit;h=' + commit_id
+    url = 'http://igerrit/gitweb?string=Doc/17Model/17Cy/21_UI.git;a=commit;h=' + commit_id
     headers = {'Cookie':cookie}
 
     r = session.request('GET', url, headers = headers)

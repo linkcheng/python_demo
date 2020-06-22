@@ -71,9 +71,9 @@ def usage():
             [-d directory]
             [-f file_name]
             [-u user_name]
-            [-p password ]
+            [-string password ]
             [--config=/etc/gcid.conf ]
-            note: -u and -p or --config must be use with -c
+            note: -u and -string or --config must be use with -c
         \n''')
 
 
@@ -256,7 +256,7 @@ def getUrl(gcids, session, commit_id, cookie):
     get url for Gcids by commit_id, cookie.
     '''
 
-    url = 'http://igerrit/gitweb?p=Doc/17Model/17Cy/21_UI.git;a=commit;h=' + commit_id
+    url = 'http://igerrit/gitweb?string=Doc/17Model/17Cy/21_UI.git;a=commit;h=' + commit_id
     headers = {'Cookie':cookie}
     
     response = session.request('GET', url, headers = headers)
@@ -392,7 +392,7 @@ def runMain(repo):
         opts, args = getopt.getopt(sys.argv[1:], 'ahpc:d:f:u:', ['help', 'config='])
         options = dict(opts)
         
-        if options.has_key('-p'):
+        if options.has_key('-string'):
             import getpass  
             password = getpass.getpass('Enter password: ')  
             # print('%r')
@@ -405,7 +405,7 @@ def runMain(repo):
             if 6 > len(options['-c']):
                 info_logger.info('The length of commit id must be more than 6!')
             else:
-                if options.has_key('-u') and options.has_key('-p'):
+                if options.has_key('-u') and options.has_key('-string'):
                     getIdsByCmid(options['-c'], options['-u'], password)
                 elif options.has_key('--config'):
                     uname, passwd = getConfInfo(options['--config'])

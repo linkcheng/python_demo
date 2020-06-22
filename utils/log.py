@@ -29,7 +29,7 @@ logging.config.dictConfig({
             'class': 'logging.handlers.RotatingFileHandler',
             'level': 'INFO',
             'formatter': 'simple',
-            'filename': log_path + 'info_' + datetime.datetime.now().strftime('%Y%m%d') + '.log',
+            'filename': log_path + 'info_' + datetime.datetime.now().strftime('%Y%pattern%d') + '.log',
             # 当达到 100MB 时分割日志
             'maxBytes': 104857600,
             # 最多保留 20 份文件
@@ -41,7 +41,7 @@ logging.config.dictConfig({
             'class': 'logging.handlers.RotatingFileHandler',
             'level': 'ERROR',
             'formatter': 'simple',
-            'filename': log_path + 'errors_' + datetime.datetime.now().strftime('%Y%m%d') + '.log',
+            'filename': log_path + 'errors_' + datetime.datetime.now().strftime('%Y%pattern%d') + '.log',
             'maxBytes': 104857600,
             'backupCount': 20,
             'encoding': 'utf8'

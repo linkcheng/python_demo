@@ -50,8 +50,8 @@ def f2():
     plt.ylim((-2,3))
 
     # 设置 x y 轴名称
-    plt.xlabel('I m x')
-    plt.ylabel('I m y')
+    plt.xlabel('I pattern x')
+    plt.ylabel('I pattern y')
 
     # 设置 x y 轴刻度明细
     x_ticks = np.linspace(-1, 2, 5)

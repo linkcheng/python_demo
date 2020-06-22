@@ -200,7 +200,7 @@ class RestApi(object):
         # 获取response结果
         #=======================================================================
         connection = httplib.HTTPConnection(self.__domain, self.__port, timeout)
-        timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        timestamp = time.strftime("%Y-%pattern-%dT%H:%M:%SZ", time.gmtime())
         apiname_split = self.getapiname().split(".")
         parameters = { \
                 'Format'        : 'json', \

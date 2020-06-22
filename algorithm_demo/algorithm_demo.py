@@ -159,10 +159,31 @@ class Solution:
         else:
             return -1
 
+    def binary_search_first_equal1(self, arr, key):
+        """第一个 == key 的位置"""
+        length = len(arr)
+        left = 0
+        right = length - 1
+        tmp = -1
+
+        while left <= right:
+            mid = (left + right) >> 1
+            if arr[mid] == key:
+                tmp = mid
+                right = mid - 1
+            elif arr[mid] > key:
+                right = mid - 1
+            else:
+                left = mid + 1
+
+        return tmp
+
     def test_binary_search_first_equal(self, key):
         arr = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]
         x = sol.binary_search_first_equal(arr, key)
         print(f'first_equal = {x}')
+        x = sol.binary_search_first_equal1(arr, key)
+        print(f'first_equal1 = {x}')
 
     def binary_search_last_equal(self, arr, key):
         """最后一个 == key 的位置"""
@@ -179,6 +200,24 @@ class Solution:
             return right
         else:
             return -1
+
+    def binary_search_last_equal1(self, arr, key):
+        """最后一个 == key 的位置"""
+        left = 0
+        right = len(arr) - 1
+        tmp = -1
+
+        while left <= right:
+            mid = (left + right) >> 1
+            if arr[mid] == key:
+                tmp = mid
+                left = mid + 1
+            elif arr[mid] < key:
+                left = mid + 1
+            else:
+                right = mid - 1
+
+        return tmp
 
     def test_binary_search_last_equal(self, key):
         arr = [1, 2, 2, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 6, 7]

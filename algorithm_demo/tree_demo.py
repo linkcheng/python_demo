@@ -13,8 +13,14 @@ print_non = partial(print, end='')
 class Node:
     def __init__(self, val: int):
         self.value = val
-        self.left = None
-        self.right = None
+        self.left: Node = None
+        self.right: Node = None
+        self.parent: Node = None
+
+    def __repr__(self):
+        return f'Node({self.value})'
+
+    __str__ = __repr__
 
 
 class Stack:
@@ -230,6 +236,73 @@ def post_order_traversal(root: Node) -> None:
         print_non(f'{data.value} ')
 
     print()
+
+
+def get_after_node(node: Node):
+    """计算中序遍历的某节点的后继节点"""
+    if not node:
+        return
+
+    if node.right:
+        return get_left_most_node(node.right)
+
+    parent = node.parent
+    while parent and parent.left != node:
+        node = parent
+        parent = node.parent
+
+    return parent
+
+
+def get_left_most_node(root: Node) -> Node:
+    if not root:
+        return root
+    while root.left:
+        root = root.left
+    return root
+
+
+def test_get_after_node():
+    root = Node(5)
+    root.left = Node(3)
+    root.left.parent = root
+    root.right = Node(7)
+    root.right.parent = root
+
+    root.left.left = Node(2)
+    root.left.left.parent = root.left
+    root.left.right = Node(4)
+    root.left.right.parent = root.left
+
+    node = get_after_node(root)
+    print(node)
+
+    node = get_after_node(root.right)
+    print(node)
+
+
+def get_before_node():
+    """计算前驱节点"""
+
+
+def serial_tree():
+    """序列化树"""
+
+
+def deserial_tree():
+    """逆序列化树"""
+
+
+def is_bst():
+    """是否是平衡搜索树"""
+
+
+def is_complet_tree():
+    """是否是完全二叉树"""
+
+
+def count_complete_tree_node():
+    """计算完全二叉树的节点个数"""
 
 
 if __name__ == '__main__':

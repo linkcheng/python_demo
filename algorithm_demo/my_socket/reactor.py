@@ -37,25 +37,20 @@ class SelectorMixin:
         self.selector.close()
 
 
-class Loop(SelectorMixin):
+class Acceptor(SelectorMixin):
     def __init__(self, server_fd):
         self.server_fd = server_fd
         self.selector = DefaultSelector()
 
-        self.processor_capacity = 8
+        self.processor_capacity = 3
         self.pq = Queue()
         self.processors = [
             Processor(self.pq) for _ in range(self.processor_capacity)
         ]
 
-        self.acceptor_capacity = 3
-        self.acceptors = [
-            Acceptor(self.pq) for _ in range(self.acceptor_capacity)
-        ]
-
     def run(self):
-        for acceptor in self.acceptors:
-            acceptor.start()
+        for processor in self.processors:
+            processor.start()
 
         while True:
             events = self.select()
@@ -65,11 +60,11 @@ class Loop(SelectorMixin):
 
     def accept(self):
         client_fd, addr = self.server_fd.accept()
-        index = client_fd.fileno() % self.acceptor_capacity
-        self.acceptors[index].register(client_fd, EVENT_READ)
+        index = client_fd.fileno() % self.processor_capacity
+        self.processors[index].register(client_fd, EVENT_READ)
 
 
-class Acceptor(Thread, SelectorMixin):
+class Processor(Thread, SelectorMixin):
     def __init__(self, pq: Queue):
         super().__init__()
         self.selector = DefaultSelector()
@@ -124,7 +119,7 @@ class Acceptor(Thread, SelectorMixin):
         self.modify(client_fd, EVENT_READ)
 
 
-class Processor(Process):
+class Handler:
     def __init__(self, pq: Queue):
         super().__init__()
         self.pq = pq

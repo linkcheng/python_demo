@@ -153,7 +153,7 @@ def is_valid_date(date):
     """
     from datetime import datetime
     try:
-        datetime.strptime(date, "%Y-%m-%d")
+        datetime.strptime(date, "%Y-%pattern-%d")
         return True
     except Exception:
         return False

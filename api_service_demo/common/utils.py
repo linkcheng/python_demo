@@ -6,7 +6,7 @@ from functools import wraps
 from datetime import datetime
 from cache.cache import HangjuXfnlParamCache
 
-FMT = '%Y-%m-%d %H:%M:%S'
+FMT = '%Y-%pattern-%d %H:%M:%S'
 time_start = datetime(1970, 1, 1)
 hangju_xfnlParam_cache = HangjuXfnlParamCache()
 logger = logging.getLogger(__name__)

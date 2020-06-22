@@ -10,7 +10,7 @@ import socket
 from socket import AF_INET, SOCK_STREAM
 
 IP = '0.0.0.0'
-PORT = 5000
+PORT = 8000
 BUFFER_SIZE = 4096
 CLIENT_SIZE = 5
 
@@ -36,7 +36,8 @@ class TcpClient1:
             data = data.encode('utf-8')
         length = len(data)
         head = struct.pack('!I', length)
-        self.client_fd.send(head+data)
+        # self.client_fd.send(head+data)
+        self.client_fd.send(data)
 
     def recv(self):
         data = self.client_fd.recv(BUFFER_SIZE)

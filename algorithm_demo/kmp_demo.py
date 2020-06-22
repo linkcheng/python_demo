@@ -9,60 +9,60 @@
 
 class KMP:
     """
-    在字符串 p 中找字符串 m
+    在字符串 string 中找字符串 pattern
     """
-    def __init__(self, p, m):
-        self.p = p
-        self.m = m
+    def __init__(self, string, pattern):
+        self.string = string
+        self.pattern = pattern
 
     def search(self):
-        next_table = self.build_next_table(self.m)
+        next_table = self.build_next_table(self.pattern)
 
-        p_cur = 0
-        p_len = len(self.p)
-        m_cur = 0
-        m_len = len(self.m)
+        s_idx = 0
+        s_len = len(self.string)
+        p_idx = 0
+        p_len = len(self.pattern)
 
-        while p_cur < p_len:
-            if self.p[p_cur] == self.m[m_cur]:
-                p_cur += 1
-                m_cur += 1
+        while s_idx < s_len:
+            if self.string[s_idx] == self.pattern[p_idx]:
+                s_idx += 1
+                p_idx += 1
             else:
-                if m_cur > 0:
+                if p_idx > 0:
                     # 在 next_table 中的前一个位置
-                    m_cur = next_table[m_cur - 1]
+                    p_idx = next_table[p_idx - 1]
                 else:
-                    p_cur += 1
+                    s_idx += 1
 
-            if m_cur == m_len:
+            if p_idx == p_len:
                 # 查找剩余位置是否还有
-                print(p_cur-m_cur)
-                m_cur = next_table[m_cur - 1]
+                print(s_idx-p_idx)
+                p_idx = next_table[p_idx - 1]
 
     def build_next_table(self, string):
         """生成 PMT"""
         next_table = [0, ]
 
-        p_index = 1
-        m_index = 0
+        p_idx = 0
+        str_idx = 1
         str_len = len(string)
 
-        while p_index < str_len:
-            if string[p_index] == string[m_index]:
-                p_index += 1
-                m_index += 1
-                next_table.append(m_index)
+        while str_idx < str_len:
+            if string[str_idx] == string[p_idx]:
+                str_idx += 1
+                p_idx += 1
+                next_table.append(p_idx)
             else:
-                if m_index > 0:
-                    m_index = next_table[m_index - 1]
+                if p_idx > 0:
+                    p_idx = next_table[p_idx - 1]
                 else:
-                    p_index += 1
+                    str_idx += 1
                     next_table.append(0)
-
+        print(next_table)
         return next_table
 
 
 if __name__ == '__main__':
-    kmp = KMP('ababcabcdab', 'abc')
+    kmp = KMP('ababcabcdabab', 'aba')
     kmp.search()
 

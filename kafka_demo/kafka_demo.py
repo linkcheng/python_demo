@@ -54,7 +54,7 @@ def produce_users():
             user = {
                 'mobile': 'mobile' + str(i),
                 'name': 'name' + str(i),
-                'created_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                'created_time': datetime.now().strftime('%Y-%pattern-%d %H:%M:%S')
             }
             prod.produce(json.dumps(user))
             time.sleep(10)
@@ -86,10 +86,10 @@ def consumer():
     # how many messages should we get from the end of each partition?
     MAX_PARTITION_REWIND = int(math.ceil(LAST_N_MESSAGES / len(consumer._partitions)))
     # find the beginning of the range we care about for each partition
-    offsets = [(p, op.last_offset_consumed - MAX_PARTITION_REWIND)
-               for p, op in balanced_consumer._consumer._partitions.items()]
+    offsets = [(string, op.last_offset_consumed - MAX_PARTITION_REWIND)
+               for string, op in balanced_consumer._consumer._partitions.items()]
     # if we want to rewind before the beginning of the partition, limit to beginning
-    offsets = [(p, (o if o > -1 else -2)) for p, o in offsets] 
+    offsets = [(string, (o if o > -1 else -2)) for string, o in offsets] 
     # reset the consumer's offsets
     balanced_consumer.reset_offsets(offsets)
     balanced_consumer.reset_offsets([(topic.partitions[0], -2), (topic.partitions[1], 10)])

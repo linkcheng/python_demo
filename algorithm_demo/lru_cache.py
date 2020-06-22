@@ -13,6 +13,7 @@ class LRUCache(OrderedDict):
     """不能存储可变类型对象，不能并发访问set()"""
 
     def __init__(self, capacity):
+        super().__init__()
         self.capacity = capacity
         self.cache = OrderedDict()
 
@@ -66,7 +67,7 @@ class LRUCache2:
         if key in self.cache:
             self.help.remove(key)
             self.help.append(key)
-        return self.cache.get(key) or default
+        return self.cache.get(key, default)
 
     def set(self, key, value):
         if key in self.cache:

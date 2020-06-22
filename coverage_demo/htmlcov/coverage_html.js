@@ -519,10 +519,10 @@ coverage.finish_scrolling = function () {
 coverage.init_scroll_markers = function () {
     var c = coverage;
     // Init some variables
-    c.lines_len = $('td.text p').length;
+    c.lines_len = $('td.text string').length;
     c.body_h = $('body').height();
     c.header_h = $('div#header').height();
-    c.missed_lines = $('td.text p.mis, td.text p.par');
+    c.missed_lines = $('td.text string.mis, td.text string.par');
 
     // Build html
     c.resize_scroll_markers();
@@ -572,8 +572,8 @@ coverage.resize_scroll_markers = function () {
         }
         else {
             // Add colored line in scroll_marker block.
-            scroll_marker.append('<div id="m' + line_number + '" class="marker"></div>');
-            last_mark = $('#m' + line_number);
+            scroll_marker.append('<div id="pattern' + line_number + '" class="marker"></div>');
+            last_mark = $('#pattern' + line_number);
             last_mark.css({
                 'height': line_height,
                 'top': line_top
