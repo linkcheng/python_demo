@@ -50,37 +50,6 @@ class BitMap:
 class BloomFilter:
     pass
 
-from queue import LifoQueue
 
-from flask import Blueprint
-import threading
-
-stack = LifoQueue()
-
-stack.put(1)
-stack.put(2)
-
-print(stack.get())
-print(stack.get())
-
-# if __name__ == '__main__':
-    # import threading
-    # import os
-    # import time
-    #
-    # from werkzeug import local
-    #
-    # def fun():
-    #     p = os.fork()
-    #     if p == 0:
-    #         print(f"this is child, {os.getpid()}, {threading.get_ident()}")
-    #         time.sleep(30)
-    #     else:
-    #         print(f"this is parent, {os.getpid()}, {threading.get_ident()}")
-    #         time.sleep(30)
-    #
-    # t = threading.Thread(target=fun)
-    #
-    # t.start()
-    # print(f'{os.getpid()}, {threading.get_ident()}')
-    # t.join()
+if __name__ == '__main__':
+    pass
