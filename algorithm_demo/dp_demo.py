@@ -6,6 +6,23 @@
 @date: 2020-06-24 
 """
 from typing import List
+from functools import wraps
+
+
+class Node:
+    def __init__(self, liveness: int, nexts: List[Node]):
+        # 活跃度
+        self.liveness = liveness
+        # 下级
+        self.nexts = nexts
+
+
+class ReturnData:
+    def __init__(self, coming_liveness, not_liveness):
+        # 来的情况的最大活跃度
+        self.coming_liveness = coming_liveness
+        # 不来的时候最大活跃度
+        self.not_liveness = not_liveness
 
 
 class Solution:
@@ -64,6 +81,40 @@ class Solution:
             for i in range(col-arr[row_no]):
                 dp_table[row_no][i] = dp_table[row_no+1][i] or dp_table[row_no+1][i+arr[row_no]]
         return dp_table[0][0]
+
+    def get_max_liveness(self, head: Node) -> int:
+        """开年会，计算最大活跃度。领导来，下级一定不来，反之而可能来也可能不来"""
+        data = self.process(head)
+        return max(data.coming_liveness, data. not_liveness)
+
+    def process(self, head: Node) -> ReturnData:
+        """获得head来和不来是最大的活跃度"""
+        coming = head.liveness
+        not_coming = 0
+
+        for node in head.nexts:
+            data = self.process(node)
+            coming += data.not_liveness
+            not_coming += max(data.coming_liveness, data.not_liveness)
+
+        return ReturnData(coming, not_coming)
+
+
+def cache(f):
+    data = {}
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        key = args[0] if args else kwargs.get('key')
+
+        if key in data:
+            return data[key]
+        else:
+            res = f(*args, **kwargs)
+            data[key] = res
+            return res
+
+    return wrapper
 
 
 if __name__ == '__main__':

@@ -281,28 +281,194 @@ def test_get_after_node():
     print(node)
 
 
-def get_before_node():
+def get_before_node(node: Node):
     """计算前驱节点"""
+    if not node:
+        return
+
+    if node.left:
+        return get_right_most_node(node.left)
+
+    parent = node.parent
+    while parent and parent.right != node:
+        node = parent
+        parent = node.parent
+    return parent
 
 
-def serial_tree():
-    """序列化树"""
+def get_right_most_node(node: Node):
+    if not node:
+        return node
+
+    while node.right:
+        node = node.right
+
+    return node
 
 
-def deserial_tree():
-    """逆序列化树"""
+def test_get_before_node():
+    root = Node(5)
+    root.left = Node(3)
+    root.left.parent = root
+    root.right = Node(7)
+    root.right.parent = root
+
+    root.left.left = Node(2)
+    root.left.left.parent = root.left
+    root.left.right = Node(4)
+    root.left.right.parent = root.left
+
+    root.right.left = Node(6)
+    root.right.left.parent = root.right
+    
+    node = get_before_node(root)
+    print(node)
+
+    node = get_before_node(root.right)
+    print(node)
+
+    node = get_before_node(root.right.left)
+    print(node)
 
 
-def is_bst():
-    """是否是平衡搜索树"""
+def is_bst(root: Node):
+    """是否是搜索树"""
+    if not root:
+        return
+
+    stack = Stack()
+    cur = root
+    last = None
+    while not stack.is_empty() or cur:
+        if cur:
+            stack.push(cur)
+            cur = cur.left
+        else:
+            node = stack.pop()
+            if last and node.value < last:
+                return False
+            else:
+                last = node.value
+            cur = node.right
+
+    return True
 
 
-def is_complet_tree():
+class ReturnData:
+    def __init__(self, h, is_b):
+        self.height = h
+        self.is_balance = is_b
+
+
+def is_balance_tree(root: Node) -> bool:
+    """是否是平衡树"""
+    return process(root).is_balance
+
+
+def process(root: Node) -> ReturnData:
+    if not root:
+        return ReturnData(0, True)
+
+    left = process(root.left)
+    if not left.is_balance:
+        return ReturnData(0, False)
+
+    right = process(root.right)
+    if not right.is_balance:
+        return ReturnData(0, False)
+
+    if abs(left.height - right.height) > 1:
+        return ReturnData(0, False)
+
+    return ReturnData(max(left.height, right.height)+1, True)
+
+
+def is_complet_tree(root: Node):
     """是否是完全二叉树"""
+    if not root:
+        return True
+
+    is_leaf = False
+    q = []
+    q.append(root)
+
+    while len(q) > 0:
+        node = q.pop(0)
+        # 如果有右孩子没有左孩子，一定不是
+        if not node.left and node.right:
+            return False
+        # 开启叶子节点判断，如果有叶子节点，则一定不是
+        if is_leaf and (node.left or node.right):
+            return False
+
+        if node.left:
+            q.append(node.left)
+        # 如果没有右孩子，则进入叶子节点判断时期
+        if node.right:
+            q.append(node.right)
+        else:
+            is_leaf = True
+
+    return True
 
 
-def count_complete_tree_node():
+def count_complete_tree_node(root: Node) -> int:
     """计算完全二叉树的节点个数"""
+    if not root:
+        return 0
+
+    max_height = get_height(root)
+    right_height = get_height(root.right)
+
+    # 如果高度差=1，说明左树是满的
+    if max_height - right_height == 1:
+        left = 1 << (max_height - 1)
+        right = count_complete_tree_node(root.right)
+    # 反之说明，右树是满的，只是高度差=2
+    else:
+        left = count_complete_tree_node(root.left)
+        right = 1 << (max_height - 2)
+
+    return left + right
+
+
+def get_height(root: Node) -> int:
+    if not root:
+        return 0
+
+    height = 0
+
+    while root:
+        height += 1
+        root = root.left
+
+    return height
+
+
+def test_count_complete_tree_node():
+    root = Node(1)
+    print(f'count={count_complete_tree_node(root)}')
+    root.left = Node(2)
+    print(count_complete_tree_node(root))
+    root.right = Node(3)
+    print(count_complete_tree_node(root))
+
+    root.left.left = Node(4)
+    print(count_complete_tree_node(root))
+    root.left.right = Node(5)
+    print(count_complete_tree_node(root))
+
+    root.right.left = Node(6)
+    print(count_complete_tree_node(root))
+    root.right.right = Node(7)
+    print(count_complete_tree_node(root))
+
+    root.left.left.left = Node(8)
+    print(count_complete_tree_node(root))
+
+
+def trie_tree():
+    """前缀树"""
 
 
 if __name__ == '__main__':
@@ -336,3 +502,18 @@ if __name__ == '__main__':
     post_order_traversal(head)
 
     level_order_traversal(head)
+
+    test_get_before_node()
+
+    test_count_complete_tree_node()
+
+
+def fib(n):
+    if n in {1, 2}:
+        return 1
+    a = b = 1
+    while n > 2:
+        a, b = b, a+b
+        n -= 1
+
+    return b
