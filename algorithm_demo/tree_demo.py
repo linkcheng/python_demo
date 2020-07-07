@@ -5,6 +5,7 @@
 @module: tree_demo
 @date: 2020-06-09 
 """
+from typing import List, Optional
 from functools import partial
 
 print_non = partial(print, end='')
@@ -467,8 +468,91 @@ def test_count_complete_tree_node():
     print(count_complete_tree_node(root))
 
 
-def trie_tree():
-    """前缀树"""
+class TriNode:
+    def __init__(self):
+        # 表示只有 0 1 两条路径
+        self.nexts: List[TriNode] = [None] * 2
+
+
+class NumTrie:
+    def __init__(self):
+        self.head = TriNode()
+
+    def add(self, val: int):
+        """在 trie tree 上添加数据，形成的树为数据的二进制形式，顺序是依次从高位到低位"""
+        cur = self.head
+        for i in range(31, -1, -1):
+            # 计算每一个二进制位的路径
+            path = val >> i & 1
+            # 已经有路径则继续使用，没有则新建
+            cur.nexts[path] = cur.nexts[path] if cur.nexts[path] else TriNode()
+            cur = cur.nexts[path]
+
+    def max_xor(self, num: int) -> int:
+        """计算最大的异或值 xor
+        num 为从 0~i的异或结果，找到树中与 num 异或结果最大的路径
+        """
+        # 符号位尽量异或结果为 0，其他尽量为1
+        cur = self.head
+        res = 0
+
+        for i in range(31, -1, -1):
+            path = num >> i & 1
+            # 如果当前为符号位，尽量选择正数，也就是符号位为 0 的，自己异或自己为 0
+            exp = path if path == 31 else path ^ 1
+            # 期望值可能存在，也可能不存在
+            best = exp if cur.nexts[exp] else exp ^ 1
+            # 收集每一位的异或结果
+            res |= (path ^ best) << i
+            cur = cur.nexts[best]
+
+        return res
+
+
+def max_xor_trie_tree(arr: List[int]):
+    """前缀树
+    给定一个数组，求子数组的最大异或和。
+    一个数组的异或和为，数组中所有的数异或起来的结果。
+    O(n)
+    """
+    if not arr:
+        return
+
+    xor = 0
+    res = None
+    trie = NumTrie()
+
+    for i, v in enumerate(arr):
+        xor ^= v
+        res = max(res, trie.max_xor(xor)) if res else xor
+        trie.add(v)
+
+    return res
+
+
+def max_xor(arr: List[int]) -> int:
+    """给定一个数组，求子数组的最大异或和。
+    一个数组的异或和为，数组中所有的数异或起来的结果。
+    O(n*n)
+    """
+    if not arr:
+        return
+
+    # 0~i 的异或和
+    xor = 0
+    res = None
+    for i, v in enumerate(arr):
+        # 计算 0~i 位置的异或和
+        xor ^= v
+        res = max(res, xor) if res else xor
+        tmp = xor
+        # 计算 x~i 位置异或和, xor[x~i] = xor[0~i] ^ xor[0~x-1]
+        for x in range(0, i):
+            tmp ^= arr[x]
+            res = max(tmp, res)
+
+    return res
+
 
 
 if __name__ == '__main__':

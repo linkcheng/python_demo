@@ -28,6 +28,7 @@ def max_in_window(arr: List[int], w: int) -> Optional[List[int]]:
 
 
 def lengthOfLongestSubstring(s: str) -> int:
+    """最长连续不重复子序列"""
     if not s or s == "":
         return 0
 

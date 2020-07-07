@@ -10,13 +10,13 @@ class Queue(Generic[T]):
         self.capacity = capacity
         self.size = 0
         self._data = []
-    
+
     def add(self, val: T):
         if self.size >= self.capacity:
             raise RuntimeError("Queue is full")
         self._data.append(val)
         self.size += 1
-    
+
     def poll(self) -> T:
         if self.size <= 0:
             raise RuntimeError("Queue is empty")
@@ -27,7 +27,7 @@ class Queue(Generic[T]):
         if self.size <= 0:
             raise RuntimeError("Queue is empty")
         return self._data[0]
-    
+
     def is_empty(self) -> bool:
         return self.size == 0
 
@@ -37,13 +37,13 @@ class Stack(Generic[T]):
         self.capacity = capacity
         self.size = 0
         self._data = []
-    
+
     def push(self, val: T):
         if self.size >= self.capacity:
             raise RuntimeError("Stack is full")
         self._data.append(val)
         self.size += 1
-    
+
     def pop(self) -> T:
         if self.size <= 0:
             raise RuntimeError("Stack is empty")
@@ -54,7 +54,7 @@ class Stack(Generic[T]):
         if self.size <= 0:
             raise RuntimeError("Stack is empty")
         return self._data[-1]
-    
+
     def is_empty(self) -> bool:
         return self.size == 0
 
@@ -68,17 +68,17 @@ def monotonic_stack(arr: List[int]) -> List[int]:
     data = Stack(length)
     res = [None] * length
 
-    for i in range(length-1, -1, -1):
-        if data.is_empty():
-            data.push(i)
-        else:
-            if arr[i] > arr[data.peek()]:
-                data.push(i)
-            else:
-                while not data.is_empty() and arr[i] < arr[data.peek()]:
-                    idx = data.pop()
-                    res[idx] = arr[i]
-                data.push(i)
+    # for i in range(length-1, -1, -1):
+    #     if data.is_empty():
+    #         data.push(i)
+    #     else:
+    #         if arr[i] > arr[data.peek()]:
+    #             data.push(i)
+    #         else:
+    #             while not data.is_empty() and arr[i] < arr[data.peek()]:
+    #                 idx = data.pop()
+    #                 res[idx] = arr[i]
+    #             data.push(i)
 
     for i in range(length-1, -1, -1):
         while not data.is_empty() and arr[i] < arr[data.peek()]:

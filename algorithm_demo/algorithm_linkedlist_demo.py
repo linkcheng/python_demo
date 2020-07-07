@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 """
-@author: Link 
+@author: Link
 @module: algorithm_demo
 @date: 2019-11-05
 """
-import time
-import random
 from typing import Optional
 from collections import namedtuple
 
