@@ -9,7 +9,7 @@ import time
 import random
 
 
-def swap( array, start, end):
+def swap(array, start, end):
     array[start], array[end] = array[end], array[start]
 
 
