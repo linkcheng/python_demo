@@ -79,7 +79,7 @@ class SkipList:
         height = len(self.head.next_node)
         cur = self.head
         for i in range(height-1, -1, -1):
-            while cur.next_node and cur.next_node[i].val < val:
+            while cur.next_node[i] and cur.next_node[i].val < val:
                 cur = cur.next_node[i]
 
             if cur.next_node and cur.next_node[i] == res:
