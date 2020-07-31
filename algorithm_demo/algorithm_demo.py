@@ -398,10 +398,12 @@ class Solution:
 
         while p1 <= mid:
             tmp[tmp_index] = arr[p1]
+            tmp_index += 1
             p1 += 1
 
         while p2 <= right:
             tmp[tmp_index] = arr[p2]
+            tmp_index += 1
             p2 += 1
 
         for i, v in enumerate(tmp):
